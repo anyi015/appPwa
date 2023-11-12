@@ -1,11 +1,12 @@
 import React from 'react';
 import Home from './components/home';
-import Categorias from './components/categorias';
 import Informes from './components/informes';
 import Navbar, { MyNavbar } from './components/Navbar/Navbar';
 import {BrowserRouter, Routes, Route, Router} from 'react-router-dom';
 import RegistrarCategoria from './components/RegistrarCategoria';
 import CategoriasTabla from './components/Tables/CategoriasTabla'; 
+import { useNavigate } from 'react-router-dom';
+
 
 
 import {Login, Signup}  from './components/home';
@@ -26,8 +27,10 @@ import VistaObjetivos from './components/crud/ViewObjetivos'
 import IngresosTabla from './components/Tables/IngresosTabla';
 import ObjetivosTabla from './components/Tables/ObjetivosTabla';
 import GastosTabla from './components/Tables/GastosTabla';
+import { useEffect, useState } from 'react';
 
 const App = () => {
+  
   return ( 
     <>
     <BrowserRouter>
@@ -43,7 +46,6 @@ const App = () => {
             <Route path='/Informes' element={<Informes></Informes>} ></Route>
             <Route path='/Gastos' element={<Gastos></Gastos> } ></Route>
             <Route path='/GastosTabla' element={<GastosTabla></GastosTabla> } ></Route>
-            <Route path='/Categorias' element={<Categorias></Categorias> } ></Route>
             <Route path='/CategoriasTabla' element={<CategoriasTabla></CategoriasTabla> } ></Route>
             <Route path='/IngresosTabla' element={<IngresosTabla></IngresosTabla> } ></Route>
             <Route path='/ObjetivosTabla' element={<ObjetivosTabla></ObjetivosTabla> } ></Route>

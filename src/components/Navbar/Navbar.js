@@ -10,10 +10,11 @@ import {CNavbar, CNavbarBrand,CNavbarNav, CContainer,CNavbarToggler,COffcanvas, 
 , COffcanvasTitle, CCloseButton, COffcanvasBody,CNavItem,CNavLink,CForm,CFormInput,CButton, CCardBody} from '@coreui/react';
 import { Outlet} from "react-router-dom";
 import {useNavigate} from 'react-router-dom';
-
+import {useUser} from '../../UserContext'
 export function  MyNavbar (){
 	const [visible, setVisible] = useState(false)
 	const navigate = useNavigate();
+	const { user } = useUser();
 	 // Agregar lógica para determinar si el usuario está autenticado
 	 const isAuthenticated = true; // Cambia esto a la lógica real de autenticación
 
@@ -71,10 +72,13 @@ export function  MyNavbar (){
 					</CNavItem>
 					
 				  </CNavbarNav>
-				  {isAuthenticated && (
-                                <div>
-                                    <button onClick={handleLogout}>Cerrar Sesión</button>
-                                </div>
+				  {isAuthenticated && user && (
+              <div>
+                <div className="navbar-text">
+                 Bienvenido! {user.email}
+                </div>
+                <button onClick={handleLogout}>Cerrar Sesión</button>
+              </div>
                             )}
 				</COffcanvasBody>
 			  </COffcanvas>

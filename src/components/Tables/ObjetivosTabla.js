@@ -57,6 +57,9 @@ export function ObjetivosTabla() {
         <div class="row align-items-center">
            
            <div class="col mt-4">
+           <label htmlFor='objetivo' className='form-label'>
+                Nombre del objetivo:
+              </label>
              <input type="text"
               class="form-control" 
               placeholder="Objetivo"
@@ -68,18 +71,22 @@ export function ObjetivosTabla() {
          
          <div class="row align-items-center mt-4">
            <div class="col">
+           <label htmlFor='objetivo' className='form-label'>
+                Fecha de inicio:
+              </label>
              <input type="date" 
              class="form-control"
-              placeholder="Fecha de inicio"
               value={fechaInicio}
                 onChange={(e) => setFechaInicio(e.target.value)}/>
            </div>
          </div>
          <div class="row align-items-center mt-4">
            <div class="col">
+           <label htmlFor='objetivo' className='form-label'>
+           Fecha de final:
+              </label>
              <input type="date" 
              class="form-control"
-              placeholder="Fecha de final"
               value={fechaFinal}
                 onChange={(e) => setFechaFinal(e.target.value)}/>
            </div>
@@ -87,9 +94,12 @@ export function ObjetivosTabla() {
 
          <div class="row align-items-center mt-4">
            <div class="col">
+           <label htmlFor='objetivo' className='form-label'>
+           Descripcion:
+              </label>
              <input type="text" 
              class="form-control" 
-             placeholder="Descripcion"
+             placeholder="ej. Comprar una nueva impresora"
              value={descripcion}
                 onChange={(e) => setDescripcion(e.target.value)}/>
            </div>
@@ -97,9 +107,13 @@ export function ObjetivosTabla() {
 
          <div class="row align-items-center mt-4">
            <div class="col">
+           <label htmlFor='objetivo' className='form-label'>
+           Valor:
+              </label>
+            
              <input type="text" 
              class="form-control" 
-             placeholder="$ Valor"
+             placeholder="ej. $100"
              value={valorObjetivo}
                 onChange={(e) => setvalorObjetivo(e.target.value)}/>
            </div>

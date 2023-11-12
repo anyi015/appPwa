@@ -1,84 +1,122 @@
-// import React, { useState, useEffect} from 'react'
-// import { Line, Bar } from 'react-chartjs-2';
-// import { db } from '../Api/firebaseConfig';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { db } from '../Api/firebaseConfig';
+import Gastos from './Gastos';
 
-// export function Informes(){
+export function Informes() {
+  const [gastos, setGastos] = useState([]);
+  const [ingresos, setIngresos] = useState([]);
+  const [totalGastos, setTotalGastos] = useState(0);
+  const [totalIngresos, setTotalIngresos] = useState(0);
 
-//   const [datosGastos, setDatosGastos] = useState([]);
-//   const [datosIngresos, setDatosIngresos] = useState([]);
+  useEffect(() => {
+    const unsubscribeGastos = db.collection('Gastos').onSnapshot((snapshot) => {
+      const nuevosGastos = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setGastos(nuevosGastos);
+    });
+
+    const unsubscribeIngresos = db.collection('Ingresos').onSnapshot((snapshot) => {
+      const nuevosIngresos = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setIngresos(nuevosIngresos);
+    });
+
+    return () => {
+      unsubscribeGastos();
+      unsubscribeIngresos();
+    };
+  }, []);
+
+  useEffect(() => {
+    // Calcular la suma de gastos
+    const totalGastos = gastos.reduce((total, gasto) => total + parseFloat(gasto.valor), 0);
+    setTotalGastos(totalGastos);
+
+    // Calcular la suma de ingresos
+    const totalIngresos = ingresos.reduce((total, ingreso) => total + parseFloat(ingreso.valor), 0);
+    setTotalIngresos(totalIngresos);
+  }, [gastos, ingresos]);
+
+  const balanceNeto = totalIngresos - totalGastos;
+
+  return (
+    <section>
+      <div className="container">
+        <div className="grid">
+          <div>
+            <h1 style={{ textAlign: 'center' }}>Informes</h1>
+            <Link to="/home" className="btn btn-light btn-lg ms-2" style={{ color: 'white', background: 'purple' }}>
+              <i className="fa-solid fa-circle-arrow-left me-2"></i>
+              Regresar
+            </Link>
+          </div>
+        </div>
+          <div class="container">
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-xl-4">
+       <div class="col">
+     <div class="card radius-10 border-start border-0 border-3 border-info">
+      <div class="card-body">
+        <div>
+          <Link to='/Cuenta'>
+          <div class="d-flex align-items-center" >
+          <div>
+            <p class="mb-0 text-secondary"><b>Total ingresos:</b></p>
+            <br></br>
+            <ul>
+                {ingresos.map((ingreso) => (
+                  <li key={ingreso.id}>{`${ingreso.valor} - ${ingreso.ingreso}`}</li>
+                ))}
+              </ul>
+          </div>
+          <div class="widgets-icons-2 rounded-circle bg-gradient-scooter text-white ms-auto"><i class="fa fa-dollar"></i>
+          </div>
+        </div>
+          </Link>
+        </div>
+        
+      </div>
+     </div>
+     </div>
+     <div class="col">
+
+    <div class="card radius-10 border-start border-0 border-3 border-danger">
+       <div class="card-body">
+        <div>
+          <Link to='/Ingresos'>
+         <div class="d-flex align-items-center">
+           <div>
+             <p class="mb-0 text-secondary"><b>Total Gastos:</b></p>
+             <br></br>
+             <ul>
+                {gastos.map((gasto) => (
+                  <li key={gasto.id}>{`${gasto.valorGasto} - ${gasto.gasto}`}</li>
+                ))}
+                <br></br>
+              </ul>
+            
+           </div>
+           <div class="widgets-icons-2 rounded-circle bg-gradient-bloody text-white ms-auto"><i class="fa-solid fa-money-bill-trend-up"></i>
+           </div>
+         </div>
+         </Link>
+         </div>
+
+       </div>
+    </div>
+    </div>
+    </div>
+    </div>
+    </div>
 
 
-//   useEffect(() => {
-//     // Aquí debes obtener tus datos de Firebase para gastos e ingresos y actualizar los estados.
 
-//     // Ejemplo de cómo obtener los datos de gastos desde Firebase (adapta a tus necesidades):
-//     db.collection('Gastos')
-//       .get()
-//       .then((querySnapshot) => {
-//         const gastos = [];
-//         querySnapshot.forEach((doc) => {
-//           const data = doc.data();
-//           gastos.push({ fecha: data.fechaGasto, valor: data.valorGasto });
-//         });
-//         setDatosGastos(gastos);
-//       });
+    </section>
 
-//     // Haz lo mismo para obtener los datos de ingresos.
-//     db.collection('Ingresos')
-//       .get()
-//       .then((querySnapshot) => {
-//         const ingreso = [];
-//         querySnapshot.forEach((doc) => {
-//           const data = doc.data();
-//           ingreso.push({ fecha: data.fecha, valor: data.valor });
-//         });
-//         setDatosGastos(ingreso);
-//       });
-
-//   }, []);
-
-//   // Procesar los datos para agruparlos por mes (puedes adaptarlo según la estructura de tus datos).
-//   const gastosPorMes = datosGastos.reduce((result, gasto) => {
-//     const [year, month] = gasto.fecha.split('-');
-//     const key = `${year}-${month}`;
-//     result[key] = (result[key] || 0) + gasto.valor;
-//     return result;
-//   }, {});
-
-//   const ingresosPorMes = datosIngresos.reduce((result, ingreso) => {
-//     const [year, month] = ingreso.fecha.split('-');
-//     const key = `${year}-${month}`;
-//     result[key] = (result[key] || 0) + ingreso.valor;
-//     return result;
-//   }, {});
-//   const meses = Object.keys(gastosPorMes);
-//   const gastos = Object.values(gastosPorMes);
-//   const ingresos = Object.values(ingresosPorMes);
-
-//   // Definición de los datos para el gráfico de barras
-//   const dataBar = {
-//     labels: meses,
-//     datasets: [
-//       {
-//         label: 'Gastos',
-//         data: gastos,
-//         backgroundColor: 'red',
-//       },
-//       {
-//         label: 'Ingresos',
-//         data: ingresos,
-//         backgroundColor: 'green',
-//       },
-//     ],
-//   };
-
-//     return (
-//        <div>
-//       <h1>Informe de Gastos e Ingresos por Mes</h1>
-//       <Bar data={dataBar} />
-//     </div>
-//     )
-//   }
+    
 
 
-// export default Informes
+    
+  );
+}
+
+export default Informes;

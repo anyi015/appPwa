@@ -121,14 +121,14 @@ const notifyDelete = () => {
                       <div className='col-md-7'>
                         <ul className='list-group'>
                           <li className='list-group-item list-group-item-action'>
-                            Institucion financiera: <span>{cuentas.institucion}</span>
+                            <b>Institucion financiera:</b> <span>{cuentas.institucion}</span>
                           </li>
 
                           <li className='list-group-item list-group-item-action'>
-                            Descripcion: <span>{cuentas.tipoCuenta}</span>
+                           <b> Descripcion:</b> <span>{cuentas.tipoCuenta}</span>
                           </li>
                           <li className='list-group-item list-group-item-action'>
-                            Saldo Actual: <span>${cuentas.saldoA}</span>
+                            <b>Saldo Actual:</b> <span>${cuentas.saldoA}</span>
                           </li>
                         </ul>
                       </div>

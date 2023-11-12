@@ -66,11 +66,14 @@ function IngresosTabla() {
                         </div>
 
                         <div class="row align-items-center">
-
+                
                             <div class="col mt-4">
+                            <label className='form-label'>
+                                    Nombre del ingreso:
+                                </label>
                                 <input type="text"
                                     class="form-control"
-                                    placeholder="Nombre del ingreso"
+                                    placeholder="ej. Ahorro"
                                     value={ingreso}
                                     onChange={(e) => setIingreso(e.target.value)}
                                 />
@@ -79,6 +82,9 @@ function IngresosTabla() {
 
                         <div class="row align-items-center mt-4">
                             <div class="col">
+                            <label className='form-label'>
+                                    Nombre de la cuenta:
+                                </label>
                                 <select
                                     className="form-control"
                                     value={cuentaInstitucion}
@@ -96,6 +102,9 @@ function IngresosTabla() {
 
                         <div class="row align-items-center mt-4">
                             <div class="col">
+                                <label className='form-label'>
+                                    Fecha:
+                                </label>
                                 <input type="date"
                                     class="form-control"
                                     placeholder="Fecha"
@@ -106,6 +115,9 @@ function IngresosTabla() {
 
                         <div class="row align-items-center mt-4">
                             <div class="col">
+                            <label className='form-label'>
+                                    Ingresa un valor:
+                                </label>
                                 <input type="text"
                                     class="form-control"
                                     placeholder="$ Valor"

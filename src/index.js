@@ -7,6 +7,7 @@ import reportWebVitals from './reportWebVitals';
 //router
 import {BrowserRouter} from 'react-router-dom'
 import Login from './components/login/singUp'
+import {UserProvider} from './UserContext'
 
 //tailwind css
 import "tw-elements-react/dist/css/tw-elements-react.min.css";
@@ -17,10 +18,13 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
+   <UserProvider>
+   <App />
+   </UserProvider>
    
-    <App />
     
-  </React.StrictMode>
+  </React.StrictMode>,
+  document.getElementById('root')
 );
 
 // If you want your app to work offline and load faster, you can change

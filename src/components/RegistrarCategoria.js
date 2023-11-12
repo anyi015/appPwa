@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Emojipicker from 'emoji-picker-react'; // Librería para seleccionar emoji
 import {db} from '../Api/firebaseConfig'; // Reemplaza 'InsertarCategoria' con la función adecuada para guardar datos en tu base de datos
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function RegistrarCategoria() {
   const [nombreCategoria, setNombreCategoria] = useState('');
@@ -14,29 +16,33 @@ function RegistrarCategoria() {
     setMostrarEmojiPicker(false);
   };
 
-  const handleGuardarCategoria = () => {
-    // Aquí puedes guardar los datos en la base de datos
-    const nuevaCategoria = {
-      nombre: nombreCategoria,
-      icono: icono,
-    };
+  const handleGuardarCategoria = async () => {
+    try {
+      // Verificar si ya existe una categoría con el mismo nombre
+      const categoriasSnapshot = await db.collection('categorias').where('nombre', '==', nombreCategoria).get();
 
-     // Guardar los datos en la base de datos de Firebase
-     db.collection('categorias')
-     .add(nuevaCategoria)
-     .then((docRef) => {
-       console.log('Categoría guardada con ID: ', docRef.id);
-       // Realizar cualquier acción adicional después de guardar los datos, como redirigir al usuario.
+      if (!categoriasSnapshot.empty) {
+        // Mostrar notificación de que la categoría ya existe
+        toast.error(`La categoría "${nombreCategoria}" ya existe. Cambia el nombre.`);
+        return;
+      }
 
-       // Redirigir al usuario a la página de inicio u a otra página después de guardar los datos
-       navigate('/CategoriasTabla');
-        // Redirige al usuario a la vista de IngresosTabla con los datos de categoría
-       navigate(`/IngresosTabla?nombreCategoria=${nombreCategoria}&icono=${icono}`);
-     })
-     .catch((error) => {
-       console.error('Error al guardar la categoría: ', error);
-     });
- };
+      // Guardar los datos en la base de datos de Firebase
+      const nuevaCategoria = {
+        nombre: nombreCategoria,
+        icono: icono,
+      };
+
+      const docRef = await db.collection('categorias').add(nuevaCategoria);
+
+      console.log('Categoría guardada con ID: ', docRef.id);
+      toast.success('Categoría guardada con éxito');
+      navigate('/CategoriasTabla');
+    } catch (error) {
+      console.error('Error al guardar la categoría: ', error);
+      toast.error('Error al guardar la categoría');
+    }
+  };
 
   return (
 
@@ -46,16 +52,19 @@ function RegistrarCategoria() {
         <div class="col-12 col-md-8 col-lg-8 col-xl-6">
         <div class="row">
         <div class="col text-center">
-              <h1>Registrar Categoría</h1>
+              <h1>Registrar Categoría:</h1>
             </div>
           </div>
         
         <div className='row align-items-center'>
         <div className="col mt-4">
+        <label htmlFor='categoria' className='form-label'>
+        Nombre de la categoria
+              </label>
           <input
             type="text"
             className="form-control"
-            placeholder="Nombre de la categoria"
+            placeholder="ej. Ropa"
             id="nombreCategoria"
             value={nombreCategoria}
             onChange={(e) => setNombreCategoria(e.target.value)}
@@ -65,12 +74,16 @@ function RegistrarCategoria() {
 
       <div className='row align-items-center mt-4'>
         <div className="col mt-4">
+        <label htmlFor='categoria' className='form-label'>
+        Selecciona un icono:
+              </label>
+              <br></br>
           <button
-            className="btn btn-light"
+            className="btn btn-light large-icon"
             onClick={() => setMostrarEmojiPicker(true)}
           >
 
-            Seleccionar Icono
+          🎁
           </button>
           {mostrarEmojiPicker && (
             <Emojipicker onEmojiClick={seleccionarEmoji} />
@@ -96,7 +109,9 @@ function RegistrarCategoria() {
           </Link>
         </div>
       </div>
+
       </div>
+      <ToastContainer />
       
     </div>
     </section>

@@ -6,13 +6,14 @@ import gastos from '../../assets/GastosPersonales2.svg';
 import Container from 'react-bootstrap/Container';
 import Navbar from 'react-bootstrap/Navbar';
 import { Link, useNavigate } from "react-router-dom";
-
+import {useUser} from '../../UserContext'
 
 export const Login = () => {
     const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [notice, setNotice] = useState("");
+    const { setUser } = useUser();
 
 
     const loginWithUsernameAndPassword = async (e) => {
@@ -20,7 +21,11 @@ export const Login = () => {
 
         try {
             await signInWithEmailAndPassword(auth, email, password);
-        
+            setUser({ email });
+            // Limpiar los estados después de un inicio de sesión exitoso
+            setEmail("");
+            setPassword("");
+            setNotice("");
             navigate("/home");
             
         } catch {

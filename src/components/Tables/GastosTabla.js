@@ -11,10 +11,10 @@ function GastosTabla() {
     const [categorias, setCategorias] = useState([]);
     const [nombreCategoria, setNombreCategoria] = useState('');
     const [cuentas, setCuentas] = useState([]);
-     // Almacenar el archivo de imagen
-     const [imagenGasto, setImagenGasto] = useState(null); 
+    // Almacenar el archivo de imagen
+    const [imagenGasto, setImagenGasto] = useState(null);
 
-     const handleImagenChange = (e) => {
+    const handleImagenChange = (e) => {
         const file = e.target.files[0];
         setImagenGasto(file);
     };
@@ -25,7 +25,7 @@ function GastosTabla() {
         const unsubscribeCategorias = db.collection('categorias').onSnapshot((snapshot) => {
             const nuevaCategorias = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
             setCategorias(nuevaCategorias);
-          });
+        });
 
         // Obtener datos de Firebase para Cuentas
         const unsubscribeCuentas = db.collection('cuentas').onSnapshot((snapshot) => {
@@ -48,33 +48,33 @@ function GastosTabla() {
             storageRef.put(imagenGasto).then((snapshot) => {
                 console.log('Imagen subida con éxito');
                 snapshot.ref.getDownloadURL().then((downloadURL) => {
-        // Crear un objeto con los datos a guardar
-        const nuevoGasto = {
-            gasto: gasto,
-            fechaGasto: fechaGasto,
-            valorGasto: valorGasto,
-            nombreCategoria:nombreCategoria,
-            cuentaInstitucion: cuentaInstitucion,
-            imagenUrl: downloadURL, // URL de la imagen subida
-        };
+                    // Crear un objeto con los datos a guardar
+                    const nuevoGasto = {
+                        gasto: gasto,
+                        fechaGasto: fechaGasto,
+                        valorGasto: valorGasto,
+                        nombreCategoria: nombreCategoria,
+                        cuentaInstitucion: cuentaInstitucion,
+                        imagenUrl: downloadURL, // URL de la imagen subida
+                    };
 
-        // Guardar los datos en la base de datos
-        db.collection('Gastos')
-            .add(nuevoGasto)
-            .then((docRef) => {
-                console.log('Gasto guardada con ID: ', docRef.id);
-                // Realizar cualquier acción adicional después de guardar los datos, como redirigir al usuario.
-                // Redirige al usuario a la vista de ingresos
-                navigate('/Gastos');
-            })
-            .catch((error) => {
-                console.error('Error al guardar el gasto: ', error);
+                    // Guardar los datos en la base de datos
+                    db.collection('Gastos')
+                        .add(nuevoGasto)
+                        .then((docRef) => {
+                            console.log('Gasto guardada con ID: ', docRef.id);
+                            // Realizar cualquier acción adicional después de guardar los datos, como redirigir al usuario.
+                            // Redirige al usuario a la vista de ingresos
+                            navigate('/Gastos');
+                        })
+                        .catch((error) => {
+                            console.error('Error al guardar el gasto: ', error);
+                        });
+                });
             });
-        });
-    });
-    } else {
-        console.error('Debes seleccionar una imagen');
-    }
+        } else {
+            console.error('Debes seleccionar una imagen');
+        }
     };
 
 
@@ -93,9 +93,12 @@ function GastosTabla() {
                         <div class="row align-items-center">
 
                             <div class="col mt-4">
+                                <label htmlFor='gasto' className='form-label'>
+                                    Nombre del gasto:
+                                </label>
                                 <input type="text"
                                     class="form-control"
-                                    placeholder="Nombre del gasto"
+                                    placeholder="ej. Pago del agua"
                                     value={gasto}
                                     onChange={(e) => setGasto(e.target.value)}
                                 />
@@ -104,6 +107,9 @@ function GastosTabla() {
 
                         <div className="row align-items-center mt-4">
                             <div className="col">
+                                <label htmlFor='gasto' className='form-label'>
+                                    Nombre de la categoria:
+                                </label>
                                 <select
                                     className="form-control"
                                     value={nombreCategoria}
@@ -121,6 +127,9 @@ function GastosTabla() {
 
                         <div class="row align-items-center mt-4">
                             <div class="col">
+                                <label htmlFor='gasto' className='form-label'>
+                                    Nombre de la cuenta:
+                                </label>
                                 <select
                                     className="form-control"
                                     value={cuentaInstitucion}
@@ -140,6 +149,9 @@ function GastosTabla() {
 
                         <div class="row align-items-center mt-4">
                             <div class="col">
+                            <label htmlFor='gasto' className='form-label'>
+                                    Fecha:
+                                </label>
                                 <input type="date"
                                     class="form-control"
                                     placeholder="Fecha"
@@ -150,6 +162,10 @@ function GastosTabla() {
 
                         <div class="row align-items-center mt-4">
                             <div class="col">
+                                <label htmlFor='gasto' className='form-label'>
+                                    Selecciona una imagen:
+                                </label>
+                                <br></br>
                                 <input
                                     type="file"
                                     onChange={handleImagenChange}
@@ -159,6 +175,9 @@ function GastosTabla() {
 
                         <div class="row align-items-center mt-4">
                             <div class="col">
+                                <label htmlFor='gasto' className='form-label'>
+                                    Valor:
+                                </label>
                                 <input type="text"
                                     class="form-control"
                                     placeholder="$ Valor"
@@ -175,7 +194,7 @@ function GastosTabla() {
                             <button class="btn btn-success mt-4"
                                 onClick={handleGuardarGasto}>Guardar</button> <br></br>
 
-                                
+
                             <Link to={'/Gastos'} className='btn btn-light' style={{ color: 'white', background: 'purple' }}>Cancelar</Link>
                         </div>
                     </div>
