@@ -122,6 +122,18 @@ export  function Home (){
       
       <div class="container">
 
+
+<div className='grid'>
+          <div>
+            <h4 style={{ textAlign: 'center', fontWeight:'500', fontSize:'x-large'}}>Descubre una forma más efectiva de gestionar tus finanzas personales:</h4>
+           <br></br>
+            <p className="text-h3 text-center " style={{  fontWeight:'200' }}>
+   Registra tus gastos e ingresos, organiza tus cuentas según tus necesidades, establece objetivos de ahorro y accede a informes detallados, todo desde un solo lugar.
+</p>
+           
+            <br></br>
+          </div>
+        </div>
       <div class="row row-cols-1 row-cols-md-2 row-cols-xl-4">
              <div class="col">
            <div class="card radius-10 border-start border-0 border-3 border-info">

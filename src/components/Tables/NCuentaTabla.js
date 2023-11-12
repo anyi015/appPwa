@@ -1,8 +1,9 @@
-import React,{useState} from 'react';
+import React,{useState, useEffect} from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {db} from '../../Api/firebaseConfig';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import {registerServiceWorker} from '../../serviceWorkerRegistration'
 
 
 
@@ -12,6 +13,9 @@ export function NCuentaTabla() {
   const [saldoA, setsaldoA] = useState('');
   const [tipoCuenta, setTipoCuenta] = useState('');
 
+  useEffect(() => {
+    registerServiceWorker(); // Registra el Service Worker al cargar el componente
+  }, []);
 
   
   const handleGuardarCuenta = () => {
@@ -28,6 +32,13 @@ export function NCuentaTabla() {
      .then((docRef) => {
        console.log('Cuenta guardada con ID: ', docRef.id);
        toast.success("Guardado con éxito!"); 
+
+       // Envia un mensaje al Service Worker para programar la sincronización
+       navigator.serviceWorker.controller.postMessage({
+         type: 'SCHEDULE_SYNC',
+         tag: 'guardar-cuenta',
+       });
+
         // Redirige al usuario a la vista de cuentas
         navigate('/cuenta');
       })

@@ -61,6 +61,25 @@ registerRoute(
   })
 );
 
+// Sincronización y notificaciones
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'guardar-cuenta') {
+    event.waitUntil(
+      self.registration.showNotification('Cuenta guardada', {
+        body: 'La cuenta se guardará automáticamente cuando tengas conexión a Internet.',
+      })
+    );
+  }
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    clients.openWindow('/cuenta') // Abre la página de tablascuenta al hacer clic en la notificación
+  );
+});
+
+
 // This allows the web app to trigger skipWaiting via
 // registration.waiting.postMessage({type: 'SKIP_WAITING'})
 self.addEventListener('message', (event) => {
