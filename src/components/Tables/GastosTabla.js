@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { db, storage } from '../../Api/firebaseConfig';
+import { db, storage, auth } from '../../Api/firebaseConfig';
 
 function GastosTabla() {
     const navigate = useNavigate(); // Obtiene la instancia de useHistory
@@ -20,18 +20,27 @@ function GastosTabla() {
     };
 
     useEffect(() => {
+        const user = auth.currentUser;
+
+        if (!user) {
+            // Redirige al usuario a la página de inicio de sesión si no está autenticado
+            navigate('/login');
+            return;
+        }
+
+        const userId = user.uid;
 
         // Obtener datos de Firebase para Categorías
-        const unsubscribeCategorias = db.collection('categorias').onSnapshot((snapshot) => {
-            const nuevaCategorias = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-            setCategorias(nuevaCategorias);
+        const unsubscribeCategorias = db.collection('usuarios').doc(userId).collection('categorias').onSnapshot((snapshot) => {
+            const nuevasCategorias = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+            setCategorias(nuevasCategorias);
         });
 
         // Obtener datos de Firebase para Cuentas
-        const unsubscribeCuentas = db.collection('cuentas').onSnapshot((snapshot) => {
+        const unsubscribeCuentas = db.collection('usuarios').doc(userId).collection('cuentas').onSnapshot((snapshot) => {
             const nuevasCuentas = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
             setCuentas(nuevasCuentas);
-        });
+          });
 
         // Limpia las suscripciones cuando la vista se desmonta
         return () => {
@@ -42,29 +51,34 @@ function GastosTabla() {
 
 
     const handleGuardarGasto = () => {
-        // Subir la imagen a Firebase Storage
+        const user = auth.currentUser;
+
+        if (!user) {
+            navigate('/login');
+            return;
+        }
+
+        const userId = user.uid;
+
         if (imagenGasto) {
             const storageRef = storage.ref(`imagenes/${imagenGasto.name}`);
             storageRef.put(imagenGasto).then((snapshot) => {
-                console.log('Imagen subida con éxito');
                 snapshot.ref.getDownloadURL().then((downloadURL) => {
-                    // Crear un objeto con los datos a guardar
                     const nuevoGasto = {
                         gasto: gasto,
                         fechaGasto: fechaGasto,
                         valorGasto: valorGasto,
                         nombreCategoria: nombreCategoria,
                         cuentaInstitucion: cuentaInstitucion,
-                        imagenUrl: downloadURL, // URL de la imagen subida
+                        imagenUrl: downloadURL,
                     };
 
-                    // Guardar los datos en la base de datos
-                    db.collection('Gastos')
+                    db.collection('usuarios')
+                        .doc(userId)
+                        .collection('gastos')
                         .add(nuevoGasto)
                         .then((docRef) => {
-                            console.log('Gasto guardada con ID: ', docRef.id);
-                            // Realizar cualquier acción adicional después de guardar los datos, como redirigir al usuario.
-                            // Redirige al usuario a la vista de ingresos
+                            console.log('Gasto guardado con ID: ', docRef.id);
                             navigate('/Gastos');
                         })
                         .catch((error) => {
@@ -76,6 +90,7 @@ function GastosTabla() {
             console.error('Debes seleccionar una imagen');
         }
     };
+
 
 
     return (

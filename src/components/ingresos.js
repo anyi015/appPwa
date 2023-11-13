@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
-import { db } from '../Api/firebaseConfig';
+import { db, auth } from '../Api/firebaseConfig';
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -26,14 +26,18 @@ export function Ingresos() {
   // Obtener datos de Firebase para Ingresos y cuentas
   useEffect(() => {
 
-    const unsubscribe = db.collection('Ingresos').onSnapshot((snapshot) => {
+    const unsubscribe = db.collection('usuarios').doc(auth.currentUser.uid).collection('ingresos').onSnapshot((snapshot) => {
       const nuevosIngresos = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setIngresos(nuevosIngresos);
     });
 
-    const unsubscribeCuentas = db.collection('cuentas').onSnapshot((snapshot) => {
-      const nuevasCuentas = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setCuentas(nuevasCuentas);
+    const unsubscribeCuentas = db.collection('usuarios').doc(auth.currentUser.uid).collection('cuentas').onSnapshot((snapshot) => {
+      const nuevaCuenta = [];
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        nuevaCuenta.push({ id: doc.id, ...data });
+      });
+      setCuentas(nuevaCuenta);
     });
     // Limpia la suscripción cuando la vista se desmonta
     return () => {
@@ -59,8 +63,8 @@ export function Ingresos() {
 
   const handleEliminar = async (id) => {
     try {
-      // Eliminar la cuenta de Firebase
-      await db.collection('Ingresos').doc(id).delete();
+      // Eliminar el ingreso de Firebase
+      await db.collection('usuarios').doc(auth.currentUser.uid).collection('ingresos').doc(id).delete();
       console.log('Ingreso eliminado exitosamente');
       notifyDelete(); // Llamada a la función notify después de la actualización exitosa
     } catch (error) {
@@ -70,8 +74,8 @@ export function Ingresos() {
 
   const handleGuardarEdicion = async () => {
     try {
-      await db.collection('Ingresos').doc(ingresoSeleccionado.id).update(ingresoSeleccionado);
-      console.log('Cuenta actualizada exitosamente');
+      await db.collection('usuarios').doc(auth.currentUser.uid).collection('ingresos').doc(ingresoSeleccionado.id).update(ingresoSeleccionado);
+      console.log('Ingreso actualizado exitosamente');
       notify(); // Llamada a la función notify después de la actualización exitosa
       setIngresoSeleccionado(null);
       toggleModal();

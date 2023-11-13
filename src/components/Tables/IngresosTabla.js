@@ -1,6 +1,8 @@
 import React, { useState,useEffect } from 'react';
 import { Link, useNavigate} from 'react-router-dom';
-import { db } from '../../Api/firebaseConfig';
+import { db, auth } from '../../Api/firebaseConfig';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function IngresosTabla() {
 
@@ -15,10 +17,14 @@ function IngresosTabla() {
     useEffect(() => {
        
         // Obtener datos de Firebase para Cuentas
-        const unsubscribeCuentas = db.collection('cuentas').onSnapshot((snapshot) => {
-            const nuevasCuentas = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-            setCuentas(nuevasCuentas);
-        });
+        const unsubscribeCuentas = db.collection('usuarios').doc(auth.currentUser.uid).collection('cuentas').onSnapshot((snapshot) => {
+            const nuevaCuenta = [];
+            snapshot.forEach((doc) => {
+              const data = doc.data();
+              nuevaCuenta.push({ id: doc.id, ...data });
+            });
+            setCuentas(nuevaCuenta);
+          });
 
         // Limpia las suscripciones cuando la vista se desmonta
         return () => {
@@ -36,21 +42,21 @@ function IngresosTabla() {
             cuentaInstitucion: cuentaInstitucion,
 
         };
-        // Guardar los datos en la base de datos
-        db.collection('Ingresos')
-            .add(nuevoIngreso)
-            .then((docRef) => {
-                console.log('Ingreso guardada con ID: ', docRef.id);
-                // Realizar cualquier acción adicional después de guardar los datos, como redirigir al usuario.
+        
+// Guardar los datos en la subcolección de ingresos del usuario actual
+  db.collection('usuarios').doc(auth.currentUser.uid).collection('ingresos')
+    .add(nuevoIngreso)
+    .then((docRef) => {
+      console.log('Ingreso guardado con ID: ', docRef.id);
+      toast.success("Guardado con éxito!");
 
-
-                // Redirige al usuario a la vista de ingresos
-                navigate('/Ingresos');
-            })
-            .catch((error) => {
-                console.error('Error al guardar el ingreso: ', error);
-            });
-    };
+      // Redirige al usuario a la vista de ingresos
+      navigate('/Ingresos');
+    })
+    .catch((error) => {
+      console.error('Error al guardar el ingreso: ', error);
+    });
+};
 
 
     return (

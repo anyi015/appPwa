@@ -1,6 +1,6 @@
 import React,{useState} from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import {db} from '../../Api/firebaseConfig';
+import {db, auth} from '../../Api/firebaseConfig';
 
 
 
@@ -17,25 +17,24 @@ export function ObjetivosTabla() {
     const nuevoObjetivo = {
       objetivo: objetivo,
       fechaFinal: fechaFinal,
-      fechaInicio:fechaInicio,
-      valorObjetivo:valorObjetivo,
-      descripcion:descripcion
+      fechaInicio: fechaInicio,
+      valorObjetivo: valorObjetivo,
+      descripcion: descripcion,
     };
-     // Guardar los datos en la base de datos
-     db.collection('Objetivos')
-     .add(nuevoObjetivo)
-     .then((docRef) => {
-       console.log('Objetivo guardada con ID: ', docRef.id);
-       // Realizar cualquier acción adicional después de guardar los datos, como redirigir al usuario.
-    
-    
-        // Redirige al usuario a la vista de cuentas
+
+    // Guardar los datos en la subcolección de objetivos del usuario actual
+    db.collection('usuarios')
+      .doc(auth.currentUser.uid)
+      .collection('objetivos')
+      .add(nuevoObjetivo)
+      .then((docRef) => {
+        console.log('Objetivo guardado con ID: ', docRef.id);
         navigate('/Objetivos');
       })
-     .catch((error) => {
-       console.error('Error al guardar el objetivo: ', error);
-     });
- };
+      .catch((error) => {
+        console.error('Error al guardar el objetivo: ', error);
+      });
+  };
 
 
   return (

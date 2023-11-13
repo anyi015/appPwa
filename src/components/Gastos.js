@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom';
-import { db, storage } from '../Api/firebaseConfig';
+import { db, storage, auth } from '../Api/firebaseConfig';
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -18,7 +18,9 @@ export function Gastos() {
   const fileInputRef = useRef(null);
 
 
-
+// Obtener el usuario actual
+const user = auth.currentUser
+  const userId = user ? user.uid : null;
   //notificaciones 
   const notify = () => {
     toast.success("Editado con exito!")
@@ -29,15 +31,18 @@ export function Gastos() {
 
   // Obtener datos de Firebase para Gastos,cuentas y categorias
   useEffect(() => {
-    const unsubscribe = db.collection('Gastos').onSnapshot((snapshot) => {
+    if (userId) {
+    const unsubscribe = db.collection('usuarios').doc(userId).collection('gastos').onSnapshot((snapshot) => {
       const nuevosGastos = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setGastos(nuevosGastos);
     });
-    const unsubscribeCuentas = db.collection('cuentas').onSnapshot((snapshot) => {
+
+    const unsubscribeCuentas = db.collection('usuarios').doc(userId).collection('cuentas').onSnapshot((snapshot) => {
       const nuevasCuentas = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setCuentas(nuevasCuentas);
     });
-    const unsubscribeCategorias = db.collection('categorias').onSnapshot((snapshot) => {
+
+    const unsubscribeCategorias = db.collection('usuarios').doc(userId).collection('categorias').onSnapshot((snapshot) => {
       const nuevaCategorias = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setCategorias(nuevaCategorias);
     });
@@ -47,7 +52,8 @@ export function Gastos() {
       unsubscribeCuentas();
       unsubscribeCategorias();
     };
-  }, []);
+    }
+  }, [userId]);
 
   const toggleModal = () => {
     setModal(!modal);
@@ -65,10 +71,10 @@ export function Gastos() {
 
   const handleEliminar = async (id) => {
     try {
-      // Eliminar la cuenta de Firebase
-      await db.collection('Gastos').doc(id).delete();
-      console.log('Gastos eliminado exitosamente');
-      notifyDelete(); // Llamada a la función notify después de la actualización exitosa
+      // Eliminar el gasto de Firebase
+      await db.collection('usuarios').doc(userId).collection('gastos').doc(id).delete();
+      console.log('Gasto eliminado exitosamente');
+      notifyDelete(); // Llamada a la función notify después de la eliminación exitosa
     } catch (error) {
       console.error('Error al eliminar el gasto', error);
     }
@@ -77,16 +83,14 @@ export function Gastos() {
   const handleGuardarEdicion = async () => {
     try {
       // Realizar la actualización del documento en Firestore con la URL de la imagen
-      await db.collection('Gastos').doc(gastoSeleccionado.id).update({
+      await db.collection('usuarios').doc(userId).collection('gastos').doc(gastoSeleccionado.id).update({
         imagenUrl: gastoSeleccionado.imagenUrl,
         gasto: gastoSeleccionado.gasto,
         nombreCategoria: gastoSeleccionado.nombreCategoria,
         cuentaInstitucion: gastoSeleccionado.cuentaInstitucion,
         fechaGasto: gastoSeleccionado.fechaGasto,
         valorGasto: gastoSeleccionado.valorGasto
-
-        // Otras propiedades que necesitas actualizar
-        // ...
+       
       });
 
       console.log('Gasto actualizado exitosamente');
@@ -104,7 +108,7 @@ export function Gastos() {
     if (name === 'imagenUrl' && files && files[0]) {
       // Si el campo es imagenUrl y hay un archivo seleccionado, subir la imagen a Firebase Storage
       const file = files[0];
-      const storageRef = storage.ref().child(`imagenesGastos/${file.name}`);
+      const storageRef = storage.ref().child(`usuarios/${userId}/imagenesGastos/${file.name}`);
       const uploadTask = storageRef.put(file);
 
       uploadTask.on(
@@ -126,6 +130,7 @@ export function Gastos() {
       setGastoSeleccionado((prevGasto) => ({ ...prevGasto, [name]: value }));
     }
   };
+
 
   //mostrar y ocultar imagen
   const handleMostrarImagen = (imagenUrl) => {

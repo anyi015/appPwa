@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { db } from '../../Api/firebaseConfig';
+import { db, auth} from '../../Api/firebaseConfig';
 import Emojipicker from 'emoji-picker-react';
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
 import { ToastContainer, toast } from 'react-toastify';
@@ -26,7 +26,11 @@ function CategoriasTabla() {
   };
   // Obtener datos de categorías desde la base de datos
   useEffect(() => {
-    const unsubscribe = db.collection('categorias').onSnapshot((snapshot) => {
+   
+
+    const userId = auth.currentUser.uid;
+
+    const unsubscribe = db.collection('usuarios').doc(userId).collection('categorias').onSnapshot((snapshot) => {
       const categoriasData = [];
       snapshot.forEach((doc) => {
         categoriasData.push({ id: doc.id, ...doc.data() });
@@ -54,25 +58,24 @@ function CategoriasTabla() {
 
   const handleEliminar = async (id) => {
     try {
-      // Eliminar la cuenta de Firebase
-      await db.collection('categorias').doc(id).delete();
-      console.log('categoria eliminada exitosamente');
+      // Eliminar la categoría de Firebase
+      await db.collection('usuarios').doc(auth.currentUser.uid).collection('categorias').doc(id).delete();
+      console.log('Categoría eliminada exitosamente');
       notifyDelete(); // Llamada a la función notify después de la actualización exitosa
     } catch (error) {
-      console.error('Error al eliminar la categoria', error);
+      console.error('Error al eliminar la categoría', error);
     }
   };
 
   const handleGuardarEdicion = async () => {
-
     try {
-      await db.collection('categorias').doc(categoriaSeleccionada.id).update(categoriaSeleccionada);
-      console.log('categoria actualizado exitosamente');
+      await db.collection('usuarios').doc(auth.currentUser.uid).collection('categorias').doc(categoriaSeleccionada.id).update(categoriaSeleccionada);
+      console.log('Categoría actualizada exitosamente');
       notify(); // Llamada a la función notify después de la actualización exitosa
       setCategoriaSeleccionada(null);
       toggleModal();
     } catch (error) {
-      console.error('Error al actualizar la categoria', error);
+      console.error('Error al actualizar la categoría', error);
     }
   };
 

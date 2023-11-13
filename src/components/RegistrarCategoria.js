@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Emojipicker from 'emoji-picker-react'; // Librería para seleccionar emoji
-import {db} from '../Api/firebaseConfig'; // Reemplaza 'InsertarCategoria' con la función adecuada para guardar datos en tu base de datos
+import {db, auth} from '../Api/firebaseConfig'; // Reemplaza 'InsertarCategoria' con la función adecuada para guardar datos en tu base de datos
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -15,11 +15,18 @@ function RegistrarCategoria() {
     setIcono(emojiObject.emoji);
     setMostrarEmojiPicker(false);
   };
+  // Obtener el ID del usuario actual
+  const userId = auth.currentUser.uid;
 
   const handleGuardarCategoria = async () => {
     try {
       // Verificar si ya existe una categoría con el mismo nombre
-      const categoriasSnapshot = await db.collection('categorias').where('nombre', '==', nombreCategoria).get();
+      const categoriasSnapshot = await db
+        .collection('usuarios')
+        .doc(userId)
+        .collection('categorias')
+        .where('nombre', '==', nombreCategoria)
+        .get();
 
       if (!categoriasSnapshot.empty) {
         // Mostrar notificación de que la categoría ya existe
@@ -33,7 +40,11 @@ function RegistrarCategoria() {
         icono: icono,
       };
 
-      const docRef = await db.collection('categorias').add(nuevaCategoria);
+      const docRef = await db
+        .collection('usuarios')
+        .doc(userId)
+        .collection('categorias')
+        .add(nuevaCategoria);
 
       console.log('Categoría guardada con ID: ', docRef.id);
       toast.success('Categoría guardada con éxito');

@@ -25,3 +25,17 @@ export const messaging = getMessaging(app);
 
 export const auth = getAuth(app);
 export const provider = new GoogleAuthProvider();
+
+export const createNewUserCollections = async (uid) => {
+  const collections = ["Gastos", "Cuenta", "Ingresos", "Objetivos", "categorias"];
+
+  for (const collectionName of collections) {
+      // Crear una nueva colección para el usuario si no existe
+      const userCollectionRef = db.collection(uid).doc(collectionName);
+      const doc = await userCollectionRef.get();
+
+      if (!doc.exists) {
+          await userCollectionRef.set({});
+      }
+  }
+};

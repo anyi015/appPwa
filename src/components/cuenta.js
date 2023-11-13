@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom';
-import { db } from '../Api/firebaseConfig';
+import { db, auth} from '../Api/firebaseConfig';
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -23,7 +23,7 @@ const notifyDelete = () => {
 
   // Obtener datos de Firebase
   useEffect(() => {
-    const unsubscribe = db.collection('cuentas').onSnapshot((snapshot) => {
+    const unsubscribe = db.collection('usuarios').doc(auth.currentUser.uid).collection('cuentas').onSnapshot((snapshot) => {
       const nuevaCuenta = [];
       snapshot.forEach((doc) => {
         const data = doc.data();
@@ -54,17 +54,17 @@ const notifyDelete = () => {
   const handleEliminar = async (id) => {
     try {
       // Eliminar la cuenta de Firebase
-      await db.collection('cuentas').doc(id).delete();
+      await db.collection('usuarios').doc(auth.currentUser.uid).collection('cuentas').doc(id).delete();
       console.log('Cuenta eliminada exitosamente');
       notifyDelete(); // Llamada a la función notify después de la actualización exitosa
     } catch (error) {
       console.error('Error al eliminar la cuenta', error);
     }
   };
-
+  
   const handleGuardarEdicion = async () => {
     try {
-      await db.collection('cuentas').doc(cuentaSeleccionada.id).update(cuentaSeleccionada);
+      await db.collection('usuarios').doc(auth.currentUser.uid).collection('cuentas').doc(cuentaSeleccionada.id).update(cuentaSeleccionada);
       console.log('Cuenta actualizada exitosamente');
       notify(); // Llamada a la función notify después de la actualización exitosa
       setCuentaSeleccionada(null);

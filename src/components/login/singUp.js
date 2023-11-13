@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import { auth } from '../../Api/firebaseConfig'
-import { createUserWithEmailAndPassword } from 'firebase/auth'
+import { auth, createNewUserCollections } from '../../Api/firebaseConfig'
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword} from 'firebase/auth'
 import { Link, useNavigate } from 'react-router-dom'
 import gastos from '../../assets/GastosPersonales2.svg';
 import Container from 'react-bootstrap/Container';
@@ -20,15 +20,36 @@ export const Signup = () => {
 
         if (password === confirmPassword) {
             try {
-                await createUserWithEmailAndPassword(auth, email, password);
+                // Registrar al usuario con correo y contraseña
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+               // Crear instancias de las colecciones para el usuario
+               await createNewUserCollections(user.uid);
                 navigate("/");
-            } catch {
-                setNotice("Lo siento, algo salio mal. Intentalo de nuevo.");
+            } catch (error) {
+                setNotice("Lo siento, algo salió mal. Inténtalo de nuevo.");
+                console.error('Error al crear el usuario:', error);
             }
         } else {
-            setNotice("Las contraseñas no coinciden.Intentalo de nuevo.");
+            setNotice("Las contraseñas no coinciden. Inténtalo de nuevo.");
         }
     };
+
+    const loginWithUsernameAndPassword = async (e) => {
+        e.preventDefault();
+
+        try {
+            // Iniciar sesión con correo y contraseña
+            await signInWithEmailAndPassword(auth, email, password);
+            navigate("/");
+        } catch (error) {
+            setNotice("Credenciales incorrectas. Inténtalo de nuevo.");
+            console.error('Error al iniciar sesión:', error);
+        }
+    };
+
+
 
     return (
 
@@ -70,7 +91,8 @@ export const Signup = () => {
                         <label htmlFor="confirmPassword" className="form-label">Confirma contraseña:</label>
                     </div>
                     <div className="d-grid">
-                        <button type="submit" className="btn bbtn-light pt-3 pb-3" style={{ color: 'white', background: 'purple', }} onClick={(e) => signupWithUsernameAndPassword(e)}>Ingresar</button>
+                    <button type="submit" className="btn bbtn-light pt-3 pb-3" style={{ color: 'white', background: 'purple' }} onClick={(e) => signupWithUsernameAndPassword(e)}>Registrar</button>
+                        <button type="submit" className="btn bbtn-light pt-3 pb-3" style={{ color: 'white', background: 'purple', }} onClick={(e) => loginWithUsernameAndPassword(e)}>Ingresar</button>
                     </div>
                     <div className="mt-3 text-center">
                         <span>Volver al login? <Link to="/" style={{ color: 'purple' }}>Haz click aquí.</Link></span>

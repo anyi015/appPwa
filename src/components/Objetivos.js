@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom';
-import { db } from '../Api/firebaseConfig';
+import { db, auth} from '../Api/firebaseConfig';
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -21,7 +21,11 @@ export function Objetivos() {
 
   useEffect(() => {
     // Obtener datos de Firebase
-    const unsubscribe = db.collection('Objetivos').onSnapshot((snapshot) => {
+    const unsubscribe = db
+    .collection('usuarios')
+    .doc(auth.currentUser.uid)
+    .collection('objetivos')
+    .onSnapshot((snapshot) => {
       const nuevoObjetivo = [];
       snapshot.forEach((doc) => {
         const data = doc.data();
@@ -45,19 +49,21 @@ export function Objetivos() {
       objetivo.cumplido = true;
 
       // Actualiza el objetivo en la base de datos (Firestore)
-      db.collection('Objetivos')
-        .doc(objetivoId)
-        .update({ cumplido: true })
-        .then(() => {
-          // Éxito: El objetivo se ha marcado como cumplido en la base de datos
-          console.log('Objetivo marcado como cumplido con éxito');
-          // Si deseas realizar más acciones después de marcarlo como cumplido, aquí es el lugar.
-        })
-        .catch((error) => {
-          // Error al actualizar en la base de datos
-          console.error('Error al marcar el objetivo como cumplido:', error);
-          // Si es necesario, maneja el error de acuerdo a tus necesidades.
-        });
+      db.collection('usuarios')
+      .doc(auth.currentUser.uid)
+      .collection('objetivos')
+      .doc(objetivoId)
+      .update({ cumplido: true })
+      .then(() => {
+        // Éxito: El objetivo se ha marcado como cumplido en la base de datos
+        console.log('Objetivo marcado como cumplido con éxito');
+        // Si deseas realizar más acciones después de marcarlo como cumplido, aquí es el lugar.
+      })
+      .catch((error) => {
+        // Error al actualizar en la base de datos
+        console.error('Error al marcar el objetivo como cumplido:', error);
+        // Si es necesario, maneja el error de acuerdo a tus necesidades.
+      });
     }
   };
 
@@ -77,10 +83,10 @@ export function Objetivos() {
 
   const handleEliminar = async (id) => {
     try {
-      // Eliminar la cuenta de Firebase
-      await db.collection('Objetivos').doc(id).delete();
-      console.log('Objetivo eliminada exitosamente');
-      notifyDelete(); // Llamada a la función notify después de la actualización exitosa
+      // Eliminar el objetivo de Firebase
+      await db.collection('usuarios').doc(auth.currentUser.uid).collection('objetivos').doc(id).delete();
+      console.log('Objetivo eliminado exitosamente');
+      notifyDelete(); // Llamada a la función notifyDelete después de la eliminación exitosa
     } catch (error) {
       console.error('Error al eliminar el Objetivo', error);
     }
@@ -88,7 +94,7 @@ export function Objetivos() {
 
   const handleGuardarEdicion = async () => {
     try {
-      await db.collection('Objetivos').doc(objetivoSeleccionado.id).update(objetivoSeleccionado);
+      await db.collection('usuarios').doc(auth.currentUser.uid).collection('objetivos').doc(objetivoSeleccionado.id).update(objetivoSeleccionado);
       console.log('Objetivo actualizado exitosamente');
       notify(); // Llamada a la función notify después de la actualización exitosa
       setObjetivoSeleccionado(null);

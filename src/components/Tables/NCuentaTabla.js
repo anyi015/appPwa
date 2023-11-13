@@ -1,6 +1,6 @@
 import React,{useState, useEffect} from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import {db} from '../../Api/firebaseConfig';
+import {db, auth} from '../../Api/firebaseConfig';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -21,21 +21,20 @@ export function NCuentaTabla() {
       saldoA: saldoA,
     };
 
-     // Guardar los datos en la base de datos
-     db.collection('cuentas')
-     .add(nuevaCuenta)
-     .then((docRef) => {
-       console.log('Cuenta guardada con ID: ', docRef.id);
-       toast.success("Guardado con éxito!"); 
+    // Guardar los datos en la subcolección de cuentas del usuario actual
+  db.collection('usuarios').doc(auth.currentUser.uid).collection('cuentas')
+  .add(nuevaCuenta)
+  .then((docRef) => {
+    console.log('Cuenta guardada con ID: ', docRef.id);
+    toast.success("Guardado con éxito!");
 
-
-        // Redirige al usuario a la vista de cuentas
-        navigate('/cuenta');
-      })
-     .catch((error) => {
-       console.error('Error al guardar la cuenta: ', error);
-     });
- };
+    // Redirige al usuario a la vista de cuentas
+    navigate('/cuenta');
+  })
+  .catch((error) => {
+    console.error('Error al guardar la cuenta: ', error);
+  });
+};
 
 
   return (

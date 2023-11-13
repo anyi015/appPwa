@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { db } from '../Api/firebaseConfig';
+import { db, auth} from '../Api/firebaseConfig';
 import Gastos from './Gastos';
 
 export function Informes() {
@@ -8,15 +8,28 @@ export function Informes() {
   const [ingresos, setIngresos] = useState([]);
   const [totalGastos, setTotalGastos] = useState(0);
   const [totalIngresos, setTotalIngresos] = useState(0);
+  const userId = auth.currentUser ? auth.currentUser.uid : null; 
 
   useEffect(() => {
-    const unsubscribeGastos = db.collection('Gastos').onSnapshot((snapshot) => {
-      const nuevosGastos = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+   
+    const unsubscribeGastos = db.collection('usuarios').doc(userId).collection('gastos').onSnapshot((snapshot) => {
+      const nuevosGastos = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        saldoA: doc.data().saldoA,
+        valor: doc.data().valor,
+        valorGasto: doc.data().valorGasto,
+        valorObjetivo: doc.data().valorObjetivo,
+      }));
       setGastos(nuevosGastos);
     });
-
-    const unsubscribeIngresos = db.collection('Ingresos').onSnapshot((snapshot) => {
-      const nuevosIngresos = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    const unsubscribeIngresos = db.collection('usuarios').doc(userId).collection('ingresos').onSnapshot((snapshot) => {
+      const nuevosIngresos = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        saldoA: doc.data().saldoA,
+        valor: doc.data().valor,
+        valorGasto: doc.data().valorGasto,
+        valorObjetivo: doc.data().valorObjetivo,
+      }));
       setIngresos(nuevosIngresos);
     });
 
@@ -36,7 +49,6 @@ export function Informes() {
     setTotalIngresos(totalIngresos);
   }, [gastos, ingresos]);
 
-  const balanceNeto = totalIngresos - totalGastos;
 
   return (
     <section>
@@ -63,10 +75,12 @@ export function Informes() {
             <p class="mb-0 text-secondary"><b>Total ingresos:</b></p>
             <br></br>
             <ul>
-                {ingresos.map((ingreso) => (
-                  <li key={ingreso.id}>{`${ingreso.valor} - ${ingreso.ingreso}`}</li>
-                ))}
-              </ul>
+        {ingresos.map((ingreso) => (
+          <li key={ingreso.id}>
+            ${ingreso.valor}
+          </li>
+        ))}
+      </ul>
           </div>
           <div class="widgets-icons-2 rounded-circle bg-gradient-scooter text-white ms-auto"><i class="fa fa-dollar"></i>
           </div>
@@ -88,11 +102,12 @@ export function Informes() {
              <p class="mb-0 text-secondary"><b>Total Gastos:</b></p>
              <br></br>
              <ul>
-                {gastos.map((gasto) => (
-                  <li key={gasto.id}>{`${gasto.valorGasto} - ${gasto.gasto}`}</li>
-                ))}
-                <br></br>
-              </ul>
+        {gastos.map((gasto) => (
+          <li key={gasto.id}>
+            ${gasto.valorGasto}
+          </li>
+        ))}
+      </ul>
             
            </div>
            <div class="widgets-icons-2 rounded-circle bg-gradient-bloody text-white ms-auto"><i class="fa-solid fa-money-bill-trend-up"></i>
