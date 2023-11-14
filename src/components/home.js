@@ -43,8 +43,10 @@ export function Home() {
   }, [notificationShown]);
 
   useEffect(() => {
-    const userId = auth.currentUser.uid;
-
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+ 
+    if (user) {
+      const userId = user.uid;
     const unsubscribeGastos = db.collection('usuarios').doc(userId).collection('gastos').onSnapshot((snapshot) => {
       // Seleccionar solo el primer elemento de la lista de gastos
       const primerGasto = snapshot.docs[0];
@@ -121,7 +123,17 @@ export function Home() {
       unsubscribeIngresos();
       unsubscribeObjetivos();
     };
-  }, []); 
+  } else {
+    // Manejar el caso cuando el usuario no está autenticado
+    setGastos([]);
+    setCuentas([]);
+    setIngresos([]);
+    setObjetivos([]);
+  }
+});
+
+return () => unsubscribe();
+}, []);
 
   return (
 
@@ -204,7 +216,7 @@ export function Home() {
                       <ul>
                         {gastos.map((gasto) => (
                           <li key={gasto.id}>
-                            Saldo : {gasto.valorGasto}
+                          {gasto.valorGasto}
                           </li>
                         ))}
                       </ul>

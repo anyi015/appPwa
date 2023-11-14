@@ -19,7 +19,7 @@ export function MyNavbar() {
 	const navigate = useNavigate();
 	const { user } = useUser();
 	// Agregar lógica para determinar si el usuario está autenticado
-	const isAuthenticated = true; // Cambia esto a la lógica real de autenticación
+	const isAuthenticated = !!user; // Cambia esto a la lógica real de autenticación
 
 	const handleLogout = () => {
 		// Agrega aquí tu lógica de cierre de sesión
@@ -33,6 +33,7 @@ export function MyNavbar() {
 			console.log("Signed out successfully")
 		}).catch((error) => {
 			// An error happened.
+			console.error("Error signing out:", error);
 		});
 	}
 
@@ -52,8 +53,11 @@ export function MyNavbar() {
 
 				<COffcanvas id="offcanvasNavbar2" placement="end" portal={false} visible={visible} onHide={() => setVisible(false)}>
 					<COffcanvasHeader>
-						<COffcanvasTitle style={{ color: 'purple' }}>MisFinanzasPersonales</COffcanvasTitle>
-						<CCloseButton className="text-reset" color="dark" onClick={() => setVisible(false)}>
+						<COffcanvasTitle style={{ color: 'purple',fontSize:'x-large' }}><b>Menú</b>
+						<hr></hr>
+						</COffcanvasTitle>
+
+						<CCloseButton className="textt" color="dark" onClick={() => setVisible(false)}>
 							<FaTimes />
 						</CCloseButton>
 
@@ -61,20 +65,28 @@ export function MyNavbar() {
 					<COffcanvasBody style={{ justifyContent: 'space-around' }}>
 						<CNavbarNav >
 							<CNavItem>
-								<CNavLink href="/" active>
-									<i class="fa fa-home" aria-hidden="true" style={{ color: 'black', width: '18px' }}></i>
-									Home
+								<CNavLink href="/home" active style={{fontSize:'x-large'}}>
+									<i class="fa fa-home" aria-hidden="true" style={{ color: 'purple', width: '35px' }}></i>
+									<b>Inicio</b>
 								</CNavLink>
 							</CNavItem>
 							<CNavItem >
-								<CNavLink href="/CategoriasTabla">
-									<i aria-hidden="true" style={{ color: 'black', width: '18px' }} class="fa-solid fa-table"></i>
-									Categorias</CNavLink>
+								<CNavLink href="/CategoriasTabla" active style={{fontSize:'x-large'}}>
+									<i aria-hidden="true" style={{ color: 'purple', width: '35px' }} class="fa-solid fa-table"></i>
+									<b>Categorias</b></CNavLink>
 							</CNavItem>
 							<CNavItem>
-								<CNavLink href="/informes">
-									<i aria-hidden="true" style={{ color: 'black', width: '18px' }} class="fa-solid fa-chart-line"></i>
-									Informes</CNavLink>
+								<CNavLink href="/informes" active style={{fontSize:'x-large'}}>
+									<i aria-hidden="true" style={{ color: 'purple', width: '35px' }} class="fa-solid fa-chart-line"></i>
+									<b>Informes</b></CNavLink>
+
+							</CNavItem>
+							<CNavItem>
+							<i aria-hidden="true" style={{ color: 'purple', width: '35px', fontSize:'x-large' }} class="fa-solid fa-right-from-bracket"></i>
+								<button onClick={handleLogout}>
+									<b>Cerrar Sesión</b>
+								</button>
+							
 							</CNavItem>
 
 						</CNavbarNav>
@@ -83,7 +95,7 @@ export function MyNavbar() {
 								<div className="navbar-text">
 									Bienvenido! {user.email}
 								</div>
-								<button onClick={handleLogout}>Cerrar Sesión</button>
+								
 							</div>
 						)}
 					</COffcanvasBody>

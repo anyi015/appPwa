@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { auth, createNewUserCollections } from '../../Api/firebaseConfig'
+import { auth, createNewUserCollections, db} from '../../Api/firebaseConfig'
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword} from 'firebase/auth'
 import { Link, useNavigate } from 'react-router-dom'
 import gastos from '../../assets/GastosPersonales2.svg';
@@ -24,8 +24,15 @@ export const Signup = () => {
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
 
-               // Crear instancias de las colecciones para el usuario
-               await createNewUserCollections(user.uid);
+              // Asegurarse de que el campo 'password' esté definido
+      const passwordToSave = password || "";
+
+     // Guardar información del usuario en la subcolección "infousuarios"
+      await db.collection('usuarios').doc(user.uid).collection('infousuarios').doc('perfil').set({
+        email: user.email,
+        password: passwordToSave,
+        // Otros datos que desees almacenar
+      });
                 navigate("/");
             } catch (error) {
                 setNotice("Lo siento, algo salió mal. Inténtalo de nuevo.");
@@ -92,8 +99,7 @@ export const Signup = () => {
                     </div>
                     <div className="d-grid">
                     <button type="submit" className="btn bbtn-light pt-3 pb-3" style={{ color: 'white', background: 'purple' }} onClick={(e) => signupWithUsernameAndPassword(e)}>Registrar</button>
-                        <button type="submit" className="btn bbtn-light pt-3 pb-3" style={{ color: 'white', background: 'purple', }} onClick={(e) => loginWithUsernameAndPassword(e)}>Ingresar</button>
-                    </div>
+                          </div>
                     <div className="mt-3 text-center">
                         <span>Volver al login? <Link to="/" style={{ color: 'purple' }}>Haz click aquí.</Link></span>
                     </div>

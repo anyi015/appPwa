@@ -13,7 +13,7 @@ export function NCuentaTabla() {
 
 
   
-  const handleGuardarCuenta = () => {
+  const handleGuardarCuenta = async () => {
     // Crear un objeto con los datos a guardar
     const nuevaCuenta = {
       institucion: institucion,
@@ -21,20 +21,22 @@ export function NCuentaTabla() {
       saldoA: saldoA,
     };
 
-    // Guardar los datos en la subcolección de cuentas del usuario actual
-  db.collection('usuarios').doc(auth.currentUser.uid).collection('cuentas')
-  .add(nuevaCuenta)
-  .then((docRef) => {
-    console.log('Cuenta guardada con ID: ', docRef.id);
-    toast.success("Guardado con éxito!");
-
-    // Redirige al usuario a la vista de cuentas
-    navigate('/cuenta');
-  })
-  .catch((error) => {
-    console.error('Error al guardar la cuenta: ', error);
-  });
-};
+    try {
+      // Obtener la referencia al documento del usuario actual
+      const userDocRef = db.collection('usuarios').doc(auth.currentUser.uid);
+  
+      // Guardar los datos en la subcolección de cuentas del usuario actual
+      const cuentaRef = await userDocRef.collection('cuentas').add(nuevaCuenta);
+  
+      console.log('Cuenta guardada con ID: ', cuentaRef.id);
+      toast.success("Guardado con éxito!");
+  
+      // Redirige al usuario a la vista de cuentas
+      navigate('/cuenta');
+    } catch (error) {
+      console.error('Error al guardar la cuenta: ', error);
+    }
+  };
 
 
   return (

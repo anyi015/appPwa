@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link,useNavigate } from 'react-router-dom';
+import { onAuthStateChanged } from 'firebase/auth';
 import { db, auth} from '../../Api/firebaseConfig';
 import Emojipicker from 'emoji-picker-react';
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
@@ -11,7 +12,8 @@ function CategoriasTabla() {
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState(null);
   const [modal, setModal] = useState(false);
   const [mostrarEmojiPicker, setMostrarEmojiPicker] = useState(false);
-  const [icono, setIcono] = useState(''); 
+  const [icono, setIcono] = useState('');
+  const navigate = useNavigate();  
   //notificaciones
   const notify = () => {
     toast.success("Editado con exito!")
@@ -28,16 +30,24 @@ function CategoriasTabla() {
   useEffect(() => {
    
 
-    const userId = auth.currentUser.uid;
+    const user = auth.currentUser;
 
+        if (!user) {
+            // Redirige al usuario a la página de inicio de sesión si no está autenticado
+            navigate('/CategoriasTabla');
+            return;
+        }
+
+        const userId = user.uid;
     const unsubscribe = db.collection('usuarios').doc(userId).collection('categorias').onSnapshot((snapshot) => {
+      console.log("Recibiendo datos de categorías...");
       const categoriasData = [];
       snapshot.forEach((doc) => {
         categoriasData.push({ id: doc.id, ...doc.data() });
       });
       setCategorias(categoriasData);
     });
-
+    console.log("Desuscribiendo...");
     return () => unsubscribe();
   }, []);
 
@@ -57,9 +67,11 @@ function CategoriasTabla() {
   };
 
   const handleEliminar = async (id) => {
+    const userId = user.uid;
+    const user = auth.currentUser;
     try {
       // Eliminar la categoría de Firebase
-      await db.collection('usuarios').doc(auth.currentUser.uid).collection('categorias').doc(id).delete();
+      await db.collection('usuarios').doc(userId).collection('categorias').doc(id).delete();
       console.log('Categoría eliminada exitosamente');
       notifyDelete(); // Llamada a la función notify después de la actualización exitosa
     } catch (error) {
