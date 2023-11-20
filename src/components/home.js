@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react'
 import { FaBullseye, FaMoneyBill, FaShoppingCart, FaChartLine, FaClock } from 'react-icons/fa'; // Importa los íconos que necesitas
 import { db } from '../Api/firebaseConfig';
 import Objetivos from './Objetivos';
+import { OcupoContexto } from '../DatosGlobales';
 export * from './login/login'
 export * from './login/singUp'
 
@@ -20,11 +21,17 @@ export function Home() {
   const [cuentas, setCuentas] = useState([]);
   const [ingresos, setIngresos] = useState([]);
   const [objetivos, setObjetivos] = useState([]);
+  const {Mostrar_Mensaje, set_Mostrar_Mensaje} =OcupoContexto()
 
   const notify = () => {
-    toast.success("Bienvenido!", {
-      icon: '👋'
-    })
+    if(Mostrar_Mensaje === true){
+
+      toast.success("Bienvenido!", {
+        icon: '👋'
+      })
+
+      set_Mostrar_Mensaje(false)
+    }
   };
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -87,14 +94,22 @@ export function Home() {
     });
 
     const unsubscribeIngresos = db.collection('usuarios').doc(userId).collection('ingresos').onSnapshot((snapshot) => {
-      const nuevosIngresos = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        saldoA: doc.data().saldoA,
-        valor: doc.data().valor,
-        valorgasto: doc.data().valorgasto,
-        valorObjetivo: doc.data().valorObjetivo,
-      }));
-      setIngresos(nuevosIngresos);
+      // Seleccionar solo el primer elemento de la lista de cuentas
+      const primeraIngreso = snapshot.docs[0];
+
+      if (primeraIngreso) {
+        const datosIngreso = {
+          id: primeraIngreso.id,
+          saldoA: primeraIngreso.data().saldoA,
+          valor: primeraIngreso.data().valor,
+          valorgasto: primeraIngreso.data().valorgasto,
+          valorObjetivo: primeraIngreso.data().valorObjetivo,
+        };
+
+        setIngresos([datosIngreso]);
+      } else {
+        setIngresos([]);
+      }
     });
 
     const unsubscribeObjetivos = db.collection('usuarios').doc(userId).collection('objetivos').onSnapshot((snapshot) => {

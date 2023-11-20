@@ -82,12 +82,13 @@ export function MyNavbar() {
 
 							</CNavItem>
 							<CNavItem>
+							<CNavLink  onClick={handleLogout} active style={{fontSize:'x-large'}}>
 							<i aria-hidden="true" style={{ color: 'purple', width: '35px', fontSize:'x-large' }} class="fa-solid fa-right-from-bracket"></i>
-								<button onClick={handleLogout}>
-									<b>Cerrar Sesión</b>
-								</button>
+							<b>Cerrar Sesión</b>
+							</CNavLink>
 							
 							</CNavItem>
+							
 
 						</CNavbarNav>
 						{isAuthenticated && user && (

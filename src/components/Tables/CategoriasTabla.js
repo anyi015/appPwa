@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Link,useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
-import { db, auth} from '../../Api/firebaseConfig';
+import { db, auth } from '../../Api/firebaseConfig';
 import Emojipicker from 'emoji-picker-react';
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
 import { ToastContainer, toast } from 'react-toastify';
@@ -13,7 +13,7 @@ function CategoriasTabla() {
   const [modal, setModal] = useState(false);
   const [mostrarEmojiPicker, setMostrarEmojiPicker] = useState(false);
   const [icono, setIcono] = useState('');
-  const navigate = useNavigate();  
+  const navigate = useNavigate();
   //notificaciones
   const notify = () => {
     toast.success("Editado con exito!")
@@ -25,20 +25,20 @@ function CategoriasTabla() {
   const seleccionarEmoji = (emojiObject) => {
     setIcono(emojiObject.emoji);
     setMostrarEmojiPicker(false);
+    setCategoriaSeleccionada((prevCategoria) => ({ ...prevCategoria, icono: emojiObject.emoji }));
+
   };
   // Obtener datos de categorías desde la base de datos
   useEffect(() => {
-   
-
     const user = auth.currentUser;
 
-        if (!user) {
-            // Redirige al usuario a la página de inicio de sesión si no está autenticado
-            navigate('/CategoriasTabla');
-            return;
-        }
+    if (!user) {
+      // Redirige al usuario a la página de inicio de sesión si no está autenticado
+      navigate('/CategoriasTabla');
+      return;
+    }
 
-        const userId = user.uid;
+    const userId = user.uid;
     const unsubscribe = db.collection('usuarios').doc(userId).collection('categorias').onSnapshot((snapshot) => {
       console.log("Recibiendo datos de categorías...");
       const categoriasData = [];
@@ -67,8 +67,9 @@ function CategoriasTabla() {
   };
 
   const handleEliminar = async (id) => {
-    const userId = user.uid;
     const user = auth.currentUser;
+    const userId = user.uid;
+
     try {
       // Eliminar la categoría de Firebase
       await db.collection('usuarios').doc(userId).collection('categorias').doc(id).delete();
@@ -122,11 +123,11 @@ function CategoriasTabla() {
               <td className='align-items-center'>
                 {/* editar */}
                 <button
-                          onClick={() => handleEditar(categoria)}
-                          className='btn btn-primary my-1'
-                        >
-                          <i className='fa fa-pen'></i>
-                        </button>
+                  onClick={() => handleEditar(categoria)}
+                  className='btn btn-primary my-1'
+                >
+                  <i className='fa fa-pen'></i>
+                </button>
                 <button
                   onClick={() => handleEliminar(categoria.id)}
                   className="btn btn-danger my-1 ms-2"
@@ -165,7 +166,7 @@ function CategoriasTabla() {
               <button
                 className="btn btn-light large-icon"
                 type='button'
-            
+
                 onClick={() => setMostrarEmojiPicker(true)}
               > {categoriaSeleccionada ? categoriaSeleccionada.icono : ''}
               </button>
@@ -175,9 +176,9 @@ function CategoriasTabla() {
               {icono && (
                 <div className="selected-icon">
                   Icono seleccionado: {icono}
-                  </div>
-              )}
                 </div>
+              )}
+            </div>
             {/* Agrega más campos según tus necesidades */}
           </form>
         </ModalBody>

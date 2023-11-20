@@ -23,35 +23,34 @@ export function Informes() {
     }
 
     const userId = user.uid;
-
-    const unsubscribeGastos = db.collection('usuarios').doc(userId).collection('gastos').onSnapshot((snapshot) => {
-      const nuevoGasto = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        saldoA: doc.data().saldoA,
-        institucion: doc.data().institucion,
-        valor: doc.data().valor,
-        valorGasto: doc.data().valorGasto,
-        valorObjetivo: doc.data().valorObjetivo,
-      }));
-      setGastos(nuevoGasto);
-    });
-
-    const unsubscribeIngresos = db.collection('usuarios').doc(userId).collection('ingresos').onSnapshot((snapshot) => {
-      const nuevosIngresos = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        saldoA: doc.data().saldoA,
-        valor: doc.data().valor,
-        valorGasto: doc.data().valorGasto,
-        valorObjetivo: doc.data().valorObjetivo,
-      }));
-      setIngresos(nuevosIngresos);
-    });
-
-  return () => {
-    unsubscribeGastos();
-    unsubscribeIngresos();
-  }
-}, [navigate]);
+    const gastosPromise = db.collection('usuarios').doc(userId).collection('gastos').get();
+    const ingresosPromise = db.collection('usuarios').doc(userId).collection('ingresos').get();
+  
+    Promise.all([gastosPromise, ingresosPromise])
+      .then(([gastosSnapshot, ingresosSnapshot]) => {
+        const nuevosGastos = gastosSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          saldoA: doc.data().saldoA,
+          institucion: doc.data().institucion,
+          valor: doc.data().valor,
+          valorGasto: doc.data().valorGasto,
+          valorObjetivo: doc.data().valorObjetivo,
+        }));
+        setGastos(nuevosGastos);
+  
+        const nuevosIngresos = ingresosSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          saldoA: doc.data().saldoA,
+          valor: doc.data().valor,
+          valorGasto: doc.data().valorGasto,
+          valorObjetivo: doc.data().valorObjetivo,
+        }));
+        setIngresos(nuevosIngresos);
+      })
+      .catch((error) => {
+        console.error('Error al obtener datos:', error);
+      });
+  }, [navigate]);
 
  
 

@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom';
-import { db, auth} from '../Api/firebaseConfig';
+import { db, auth, messaging } from '../Api/firebaseConfig';
+import { initializeApp } from '../Api/firebaseConfig';
+import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import addNotification from 'react-push-notification'
+import favicon from '../assets/favicon.svg';
 
 export function Objetivos() {
 
@@ -18,21 +22,24 @@ export function Objetivos() {
   const notifyDelete = () => {
     toast.error("Eliminado con exito!")
   };
+  const notifyObjetivoC = () => {
+    toast.success("Completado con exito!")
+  };
 
   useEffect(() => {
     // Obtener datos de Firebase
     const unsubscribe = db
-    .collection('usuarios')
-    .doc(auth.currentUser.uid)
-    .collection('objetivos')
-    .onSnapshot((snapshot) => {
-      const nuevoObjetivo = [];
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        nuevoObjetivo.push({ id: doc.id, ...data });
+      .collection('usuarios')
+      .doc(auth.currentUser.uid)
+      .collection('objetivos')
+      .onSnapshot((snapshot) => {
+        const nuevoObjetivo = [];
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          nuevoObjetivo.push({ id: doc.id, ...data });
+        });
+        setObjetivos(nuevoObjetivo);
       });
-      setObjetivos(nuevoObjetivo);
-    });
 
 
     // Limpia la suscripción cuando la vista se desmonta
@@ -50,20 +57,21 @@ export function Objetivos() {
 
       // Actualiza el objetivo en la base de datos (Firestore)
       db.collection('usuarios')
-      .doc(auth.currentUser.uid)
-      .collection('objetivos')
-      .doc(objetivoId)
-      .update({ cumplido: true })
-      .then(() => {
-        // Éxito: El objetivo se ha marcado como cumplido en la base de datos
-        console.log('Objetivo marcado como cumplido con éxito');
-        // Si deseas realizar más acciones después de marcarlo como cumplido, aquí es el lugar.
-      })
-      .catch((error) => {
-        // Error al actualizar en la base de datos
-        console.error('Error al marcar el objetivo como cumplido:', error);
-        // Si es necesario, maneja el error de acuerdo a tus necesidades.
-      });
+        .doc(auth.currentUser.uid)
+        .collection('objetivos')
+        .doc(objetivoId)
+        .update({ cumplido: true })
+        .then(() => {
+          // Éxito: El objetivo se ha marcado como cumplido en la base de datos
+          notifyObjetivoC();
+          console.log('Objetivo marcado como cumplido con éxito');
+          // Si deseas realizar más acciones después de marcarlo como cumplido, aquí es el lugar.
+        })
+        .catch((error) => {
+          // Error al actualizar en la base de datos
+          console.error('Error al marcar el objetivo como cumplido:', error);
+          // Si es necesario, maneja el error de acuerdo a tus necesidades.
+        });
     }
   };
 
@@ -110,6 +118,73 @@ export function Objetivos() {
   };
 
 
+  const requestNotificationPermission = async () => {
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission === 'granted') {
+        // generar token
+        const token = await getToken(messaging, {
+          vapidKey:
+            'BB3tzAZFr1G0-DWMoJiRchWdFOz3Xlh-nKcScdCv_bVthl_TKp-4BaPbdOWLMTfzsO3IocwMnqSKGC_ZNI-AfeY',
+        });
+        console.log('token generado:', token);
+      } else if (permission === 'default') {
+        alert('Permiso denegado');
+      }
+    } catch (error) {
+      console.error('Error al solicitar permisos de notificación:', error);
+    }
+  };
+
+  useEffect(() => {
+    requestNotificationPermission();
+  }, []);
+
+  const sendNotification = (objetivo) => {
+    const fechaFinal = new Date(objetivo.fechaFinal);
+    const dosSemanasAntes = new Date();
+    dosSemanasAntes.setDate(dosSemanasAntes.getDate() + 14); // Obtener la fecha actual + 14 días
+
+    if (fechaFinal > new Date() && fechaFinal <= dosSemanasAntes) {
+      // La fecha final está a 2 semanas de distancia y aún no ha pasado
+      const notificationTitle = 'Recordatorio de Objetivo';
+      const notificationOptions = {
+        body: `El objetivo "${objetivo.objetivo}" está a dos semanas de su fecha final. ¡No olvides trabajar en ello!`,
+        icon: favicon, // Reemplaza 'ruta/a/tu/icono.png' con la ruta real de tu icono
+        // color: '#fff', // Reemplaza '#3498db' con el color deseado en formato hexadecimal
+        // backgroundColor: '#6078ea',
+      };
+
+      // Mostrar la notificación
+      new Notification(notificationTitle, notificationOptions);
+    }
+  };
+  useEffect(() => {
+    const setupPushNotifications = async () => {
+      try {
+        const messaging = getMessaging();
+        await requestNotificationPermission();
+
+        // Manejar las notificaciones push mientras la aplicación está abierta
+        onMessage(messaging, (payload) => {
+          console.log('Notificación push recibida:', payload);
+          // Puedes personalizar cómo manejar las notificaciones push aquí
+          // Ejemplo: mostrar una notificación nativa usando la API Notification
+          const { title, body } = payload.notification;
+          new Notification(title, { body });
+        });
+      } catch (error) {
+        console.error('Error al configurar notificaciones push:', error);
+      }
+    };
+    setupPushNotifications();
+    // Enviar recordatorio cuando la aplicación se carga
+    objetivos.forEach((objetivo) => {
+      sendNotification(objetivo);
+    });
+  }, [objetivos]);
+
+
 
   return (
 
@@ -129,6 +204,7 @@ export function Objetivos() {
               <Link to='/home' className='btn btn-light btn-lg ms-2' style={{ color: 'white', background: 'purple' }}>
                 <i class="fa-solid fa-circle-arrow-left me-2" ></i>
                 Regresar</Link>
+
             </div>
           </div>
         </div>
@@ -138,7 +214,7 @@ export function Objetivos() {
           <div className='row'>
             {objetivos.map((objetivo) => (
               <div key={objetivo.id} className='col-md-6'>
-                <div className={`card ${objetivo.cumplido ? 'bg-success' : 'bg-danger' }`}>
+                <div className={`card ${objetivo.cumplido ? 'bg-success' : 'bg-danger'}`}>
                   <div className='card-body' style={{ backgroundColor: objetivo.cumplido ? '#9cc4e4' : '#dd5866' }}>
                     <div className='row align-items-center d-flex jutify-content-around'>
                       <div className='col-md-4'>
@@ -167,21 +243,34 @@ export function Objetivos() {
                         {objetivo.cumplido ? (
                           <span className="text-white large-icon"><b>🔓</b></span>
                         ) : (
-                          <button className="btn btn-success my-1" onClick={() => handleObjetivoCumplido(objetivo.id)}>
+                          <button className="btn btn-success my-1"
+                            onClick={() => handleObjetivoCumplido(objetivo.id)}
+                            title='Objetivo Cumplido!'
+                          >
                             <i className="fa fa-check"></i>
                           </button>
                         )}
+
+                        <Link to="/cuenta"
+                          className="btn btn-secondary my-1"
+                          title="Ver saldo de la cuenta">
+                          <i className="fa fa-eye"></i>
+
+                        </Link>
+
                         {/* editar */}
                         <button
                           onClick={() => handleEditar(objetivo)}
                           className='btn btn-primary my-1'
+                          title='Editar'
                         >
                           <i className='fa fa-pen'></i>
                         </button>
-                        
+
                         <button
-                         className='btn btn-danger my-1' 
-                         onClick={() => handleEliminar(objetivo.id)}>
+                          className='btn btn-danger my-1'
+                          onClick={() => handleEliminar(objetivo.id)}
+                          title='Eliminar'>
                           <i className='fa fa-trash'></i>
                         </button>
 
@@ -241,7 +330,7 @@ export function Objetivos() {
               />
 
               <label htmlFor='objetivo' className='form-label'>
-              Descripcion:
+                Descripcion:
               </label>
               <input
                 type='text'
@@ -254,7 +343,7 @@ export function Objetivos() {
               />
 
               <label htmlFor='objetivo' className='form-label'>
-              Valor:
+                Valor:
               </label>
               <input
                 type='text'

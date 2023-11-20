@@ -2,7 +2,7 @@ import firebase from 'firebase/compat/app';
 import { getAuth, GoogleAuthProvider, setPersistence,browserSessionPersistence } from "firebase/auth";
 import 'firebase/compat/firestore';
 import 'firebase/compat/storage';
-import { getMessaging} from 'firebase/messaging';
+import { getMessaging, getToken} from 'firebase/messaging';
 
 
 var firebaseConfig = {
@@ -28,3 +28,4 @@ export const provider = new GoogleAuthProvider();
 
 // Configurar la persistencia en la sesión del navegador
 setPersistence(auth, browserSessionPersistence);
+getToken(messaging, {vapidKey: "BB3tzAZFr1G0-DWMoJiRchWdFOz3Xlh-nKcScdCv_bVthl_TKp-4BaPbdOWLMTfzsO3IocwMnqSKGC_ZNI-AfeY"});

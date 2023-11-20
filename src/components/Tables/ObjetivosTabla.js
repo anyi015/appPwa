@@ -1,4 +1,4 @@
-import React,{useState} from 'react';
+import React,{useState, useEffect} from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {db, auth} from '../../Api/firebaseConfig';
 
@@ -11,6 +11,8 @@ export function ObjetivosTabla() {
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFinal, setFechaFinal] = useState('');
   const [valorObjetivo, setvalorObjetivo] = useState('');
+  const [cuentas, setCuentas] = useState([]);
+  const [cuentaInstitucion, setCuentaInstitucion] = useState('');
 
   const handleGuardarObjetivo = () => {
     // Crear un objeto con los datos a guardar
@@ -21,6 +23,7 @@ export function ObjetivosTabla() {
       valorObjetivo: valorObjetivo,
       descripcion: descripcion,
     };
+    
 
     // Guardar los datos en la subcolección de objetivos del usuario actual
     db.collection('usuarios')
@@ -35,6 +38,23 @@ export function ObjetivosTabla() {
         console.error('Error al guardar el objetivo: ', error);
       });
   };
+  
+  
+  useEffect(() => {
+    const user = auth.currentUser;
+
+    const userId = user.uid
+    // Obtener datos de Firebase para Cuentas
+    const unsubscribeCuentas = db.collection('usuarios').doc(userId).collection('cuentas').onSnapshot((snapshot) => {
+        const nuevasCuentas = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        setCuentas(nuevasCuentas);
+      });
+
+    // Limpia las suscripciones cuando la vista se desmonta
+    return () => {
+        unsubscribeCuentas();
+    };
+}, []);
 
 
   return (
@@ -90,6 +110,26 @@ export function ObjetivosTabla() {
                 onChange={(e) => setFechaFinal(e.target.value)}/>
            </div>
          </div>
+
+         <div class="row align-items-center mt-4">
+                            <div class="col">
+                                <label htmlFor='gasto' className='form-label'>
+                                    Nombre de la cuenta:
+                                </label>
+                                <select
+                                    className="form-control"
+                                    value={cuentaInstitucion}
+                                    onChange={(e) => setCuentaInstitucion(e.target.value)}
+                                >
+                                    <option value="">Selecciona una cuenta</option>
+                                    {cuentas.map((cuenta) => (
+                                        <option key={cuenta.id} value={cuenta.institucion}>
+                                            {cuenta.institucion}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
 
          <div class="row align-items-center mt-4">
            <div class="col">
