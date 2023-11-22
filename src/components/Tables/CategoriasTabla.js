@@ -40,7 +40,7 @@ function CategoriasTabla() {
 
     const userId = user.uid;
     const unsubscribe = db.collection('usuarios').doc(userId).collection('categorias').onSnapshot((snapshot) => {
-      console.log("Recibiendo datos de categorías...");
+      console.log("Recibiendo datos de categorías:");
       const categoriasData = [];
       snapshot.forEach((doc) => {
         categoriasData.push({ id: doc.id, ...doc.data() });
