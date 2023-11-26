@@ -14,6 +14,9 @@ import { Outlet } from "react-router-dom";
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../UserContext'
 import { FaTimes } from 'react-icons/fa';
+import { AppProvider } from '../../DatosGlobales';
+
+
 export function MyNavbar() {
 	const [visible, setVisible] = useState(false)
 	const navigate = useNavigate();
@@ -50,6 +53,7 @@ export function MyNavbar() {
 
 			/>
 			<CContainer fluid style={{ textAlign: 'center' }}>
+				<AppProvider>
 
 				<COffcanvas id="offcanvasNavbar2" placement="end" portal={false} visible={visible} onHide={() => setVisible(false)}>
 					<COffcanvasHeader>
@@ -102,6 +106,7 @@ export function MyNavbar() {
 					</COffcanvasBody>
 				</COffcanvas>
 
+				</AppProvider>
 
 			</CContainer>
 		</CNavbar>

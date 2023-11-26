@@ -30,26 +30,22 @@ function CategoriasTabla() {
   };
   // Obtener datos de categorías desde la base de datos
   useEffect(() => {
-    const user = auth.currentUser;
-
-    if (!user) {
-      // Redirige al usuario a la página de inicio de sesión si no está autenticado
-      navigate('/CategoriasTabla');
-      return;
-    }
-
-    const userId = user.uid;
-    const unsubscribe = db.collection('usuarios').doc(userId).collection('categorias').onSnapshot((snapshot) => {
-      console.log("Recibiendo datos de categorías:");
-      const categoriasData = [];
-      snapshot.forEach((doc) => {
-        categoriasData.push({ id: doc.id, ...doc.data() });
+       
+    // Obtener datos de Firebase para Cuentas
+    const unsubscribeCategorias = db.collection('usuarios').doc(auth.currentUser.uid).collection('categorias').onSnapshot((snapshot) => {
+        const nuevaCategorias = [];
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          nuevaCategorias.push({ id: doc.id, ...data });
+        });
+        setCategorias(nuevaCategorias);
       });
-      setCategorias(categoriasData);
-    });
-    console.log("Desuscribiendo...");
-    return () => unsubscribe();
-  }, []);
+
+    // Limpia las suscripciones cuando la vista se desmonta
+    return () => {
+        unsubscribeCategorias();
+    };
+}, []);
 
 
   const toggleModal = () => {

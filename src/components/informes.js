@@ -12,7 +12,9 @@ export function Informes() {
   const [totalIngresos, setTotalIngresos] = useState(0);
   const navigate = useNavigate();  
   
-
+  const user = auth.currentUser
+  const userId = user ? user.uid : null;
+  
   useEffect(() => {
     const user = auth.currentUser;
 
@@ -21,37 +23,72 @@ export function Informes() {
         navigate('/Informes');
         return;
     }
+   
 
     const userId = user.uid;
-    const gastosPromise = db.collection('usuarios').doc(userId).collection('gastos').get();
-    const ingresosPromise = db.collection('usuarios').doc(userId).collection('ingresos').get();
-  
-    Promise.all([gastosPromise, ingresosPromise])
-      .then(([gastosSnapshot, ingresosSnapshot]) => {
-        const nuevosGastos = gastosSnapshot.docs.map((doc) => ({
+    const unsubscribeGastos = db.collection('usuarios').doc(userId).collection('gastos').onSnapshot((snapshot) => {
+      const nuevosGastos = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        saldoA: doc.data().saldoA,
+        institucion: doc.data().institucion,
+        valor: doc.data().valor,
+        valorGasto: doc.data().valorGasto,
+        valorObjetivo: doc.data().valorObjetivo,
+      }));
+      setGastos(nuevosGastos);
+    });
+
+    return () => {
+      unsubscribeGastos();
+    };
+  }, [navigate]);
+  useEffect(() => {
+    if (userId) {
+      const unsubscribeCuentas = db.collection('usuarios').doc(userId).collection('cuentas').onSnapshot((snapshot) => {
+        const nuevasCuentas = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        setCuentas(nuevasCuentas);
+      });
+
+      return () => {
+        unsubscribeCuentas();
+      };
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    if (userId) {
+      const unsubscribeIngresos = db.collection('usuarios').doc(userId).collection('ingresos').onSnapshot((snapshot) => {
+        const nuevosIngresos = snapshot.docs.map((doc) => ({
           id: doc.id,
-          saldoA: doc.data().saldoA,
-          institucion: doc.data().institucion,
-          valor: doc.data().valor,
-          valorGasto: doc.data().valorGasto,
-          valorObjetivo: doc.data().valorObjetivo,
-        }));
-        setGastos(nuevosGastos);
-  
-        const nuevosIngresos = ingresosSnapshot.docs.map((doc) => ({
-          id: doc.id,
+          cuentaInstitucion: doc.data().cuentaInstitucion,
           saldoA: doc.data().saldoA,
           valor: doc.data().valor,
           valorGasto: doc.data().valorGasto,
           valorObjetivo: doc.data().valorObjetivo,
         }));
         setIngresos(nuevosIngresos);
-      })
-      .catch((error) => {
-        console.error('Error al obtener datos:', error);
       });
-  }, [navigate]);
 
+      return () => {
+        unsubscribeIngresos();
+      };
+    }
+  }, [userId]);
+  
+    
+
+  // useEffect(() => {
+  //   if (userId) {
+
+  //   const unsubscribeCuentas = db.collection('usuarios').doc(userId).collection('cuentas').onSnapshot((snapshot) => {
+  //     const nuevasCuentas = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  //     setCuentas(nuevasCuentas);
+  //   });
+  //   return () => {
+  //     unsubscribeCuentas();
+  //   };
+  //   }
+  // }, [userId]);
  
 
   return (
@@ -75,18 +112,27 @@ export function Informes() {
         <div>
           <div class="d-flex align-items-center" >
           <div>
-                        <p className="mb-0 text-secondary"><b>Total ingresos:</b></p>
-                        <br></br>
-                        <ul>
-      {gastos.map((gasto) => (
-        <li key={gasto.id}>
-          ${gasto.valorGasto}
-          <hr></hr>
-        </li>
-      ))}
-    </ul>
-                      </div>
-          </div>
+          <p className="mb-0 text-secondary">
+                    <b>Total ingresos por cuenta:</b>
+                  </p>
+                  <br />
+                  {cuentas.map((cuenta) => (
+                    <div key={cuenta.id}>
+                      <p className="mb-0">{cuenta.institucion}</p>
+                      <ul>
+                        {ingresos
+                          .filter((ingreso) => ingreso.cuentaInstitucion === cuenta.institucion)
+                          .map((ingreso) => (
+                            <li key={ingreso.id}>
+                              ${ingreso.valor}
+                              <hr />
+                              </li>
+                          ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              </div>
           <div class="widgets-icons-2 rounded-circle bg-gradient-scooter text-white ms-auto"><i class="fa fa-dollar"></i>
           </div>
         </div>
@@ -103,14 +149,22 @@ export function Informes() {
            <div>
              <p class="mb-0 text-secondary"><b>Total Gastos:</b></p>
              <br></br>
-             <ul>
-                        {gastos.map((gasto) => (
-                          <li key={gasto.id}>
-                            $ {gasto.valorGasto}
-                             <hr></hr>
-                          </li>
-                        ))}
+
+             {cuentas.map((cuenta) => (
+                    <div key={cuenta.id}>
+                      <p className="mb-0">{cuenta.institucion}</p>
+                      <ul>
+                        {gastos
+                          .filter((gasto) => gasto.cuentaInstitucion === gasto.institucion)
+                          .map((gasto) => (
+                            <li key={gasto.id}>
+                              ${gasto.valorGasto}
+                              <hr />
+                              </li>
+                          ))}
                       </ul>
+                    </div>
+                  ))}
             
            </div>
            <div class="widgets-icons-2 rounded-circle bg-gradient-bloody text-white ms-auto"><i class="fa-solid fa-money-bill-trend-up"></i>
