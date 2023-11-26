@@ -13,6 +13,7 @@ function CategoriasTabla() {
   const [modal, setModal] = useState(false);
   const [mostrarEmojiPicker, setMostrarEmojiPicker] = useState(false);
   const [icono, setIcono] = useState('');
+  const [datosCargados, setDatosCargados] = useState(false);
   const navigate = useNavigate();
   //notificaciones
   const notify = () => {
@@ -30,6 +31,8 @@ function CategoriasTabla() {
   };
   // Obtener datos de categorías desde la base de datos
   useEffect(() => {
+    const fetchData = async () => {
+      try {
     const user = auth.currentUser;
 
   if (user) {
@@ -41,12 +44,22 @@ function CategoriasTabla() {
       setCategorias(nuevasCategoria);
     });
 
+    setDatosCargados(true);
     // Limpia las suscripciones cuando la vista se desmonta
     return () => {
       unsubscribeCategorias();
     };
   }
-}, []);
+} catch (error) {
+  console.error('Error al obtener datos:', error);
+}
+};
+
+if (!datosCargados) {
+fetchData();
+}
+
+}, [navigate, datosCargados]);
 
 
   const toggleModal = () => {
@@ -94,6 +107,10 @@ function CategoriasTabla() {
     setCategoriaSeleccionada((prevcategoria) => ({ ...prevcategoria, [name]: value }));
   };
 
+  const handleCargarDatos = () => {
+    setDatosCargados(false); // Forzar la recarga de datos
+  };
+
   return (
     <div className="container">
       <h1 style={{ textAlign: 'center' }}>Categorías</h1>
@@ -104,6 +121,12 @@ function CategoriasTabla() {
       <Link to='/home' className='btn btn-light btn-lg ms-2' style={{ color: 'white', background: 'purple' }}>
         <i class="fa-solid fa-circle-arrow-left me-2" ></i>
         Regresar</Link>
+        <button className='btn btn-light btn-lg ms-2' 
+
+        onClick={handleCargarDatos}>
+
+       <i class="fa-solid fa-arrows-rotate"></i>
+      </button>
       <table className="table table-hover mt-3">
         <thead>
           <tr class="table-success">

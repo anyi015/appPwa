@@ -8,55 +8,49 @@ export function Informes() {
   const [objetivos, setObjetivos] = useState([]);
   const [cuentas, setCuentas] = useState([]);
   const [ingresos, setIngresos] = useState([]);
+  const [datosCargados, setDatosCargados] = useState(false); // Nuevo estado
+  
   const navigate = useNavigate();
 
   const user = auth.currentUser
   const userId = user ? user.uid : null;
 
   useEffect(() => {
-    const user = auth.currentUser;
+    const fetchData = async () => {
+      try {
+        const user = auth.currentUser;
 
-    if (!user) {
-      // Redirige al usuario a la página de inicio de sesión si no está autenticado
-      navigate('/Informes');
-      return;
-    }
+        if (!user) {
+          // Redirige al usuario a la página de inicio de sesión si no está autenticado
+          navigate('/Informes');
+          return;
+        }
 
+        const userId = user.uid;
 
-    const userId = user.uid;
-    const unsubscribeGastos = db.collection('usuarios').doc(userId).collection('gastos').onSnapshot((snapshot) => {
-      const nuevosGastos = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        saldoA: doc.data().saldoA,
-        cuentaInstitucion: doc.data().cuentaInstitucion,
-        valor: doc.data().valor,
-        valorGasto: doc.data().valorGasto,
-        valorObjetivo: doc.data().valorObjetivo,
-      }));
-      setGastos(nuevosGastos);
-    });
+        // Promesas para las suscripciones
+        const [gastosSnapshot, cuentasSnapshot, ingresosSnapshot, objetivosSnapshot] = await Promise.all([
+          db.collection('usuarios').doc(userId).collection('gastos').get(),
+          db.collection('usuarios').doc(userId).collection('cuentas').get(),
+          db.collection('usuarios').doc(userId).collection('ingresos').get(),
+          db.collection('usuarios').doc(userId).collection('objetivos').get(),
+        ]);
 
-    return () => {
-      unsubscribeGastos();
-    };
-  }, [navigate]);
-  useEffect(() => {
-    if (userId) {
-      const unsubscribeCuentas = db.collection('usuarios').doc(userId).collection('cuentas').onSnapshot((snapshot) => {
-        const nuevasCuentas = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        // Mapeo de los datos
+        const nuevosGastos = gastosSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          saldoA: doc.data().saldoA,
+          cuentaInstitucion: doc.data().cuentaInstitucion,
+          valor: doc.data().valor,
+          valorGasto: doc.data().valorGasto,
+          valorObjetivo: doc.data().valorObjetivo,
+        }));
+        setGastos(nuevosGastos);
+
+        const nuevasCuentas = cuentasSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
         setCuentas(nuevasCuentas);
-      });
 
-      return () => {
-        unsubscribeCuentas();
-      };
-    }
-  }, [userId]);
-
-  useEffect(() => {
-    if (userId) {
-      const unsubscribeIngresos = db.collection('usuarios').doc(userId).collection('ingresos').onSnapshot((snapshot) => {
-        const nuevosIngresos = snapshot.docs.map((doc) => ({
+        const nuevosIngresos = ingresosSnapshot.docs.map((doc) => ({
           id: doc.id,
           cuentaInstitucion: doc.data().cuentaInstitucion,
           saldoA: doc.data().saldoA,
@@ -65,34 +59,27 @@ export function Informes() {
           valorObjetivo: doc.data().valorObjetivo,
         }));
         setIngresos(nuevosIngresos);
-      });
 
-      return () => {
-        unsubscribeIngresos();
-      };
-    }
-  }, [userId]);
-  useEffect(() => {
-    if (userId) {
-      const unsubscribeObjetivos = db
-        .collection('usuarios')
-        .doc(userId)
-        .collection('objetivos')
-        .onSnapshot((snapshot) => {
-          const nuevosObjetivos = snapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }));
-          setObjetivos(nuevosObjetivos);
-        });
-
-      return () => {
-        unsubscribeObjetivos();
-      };
-    }
-  }, [userId]);
+        const nuevosObjetivos = objetivosSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setObjetivos(nuevosObjetivos);
 
 
+        setDatosCargados(true);
+      } catch (error) {
+        console.error('Error al obtener datos:', error);
+      }
+    };
+    if (!datosCargados) {
+      fetchData();
+    } // Llamada a la función de obtención de datos
+  }, [navigate, userId,, datosCargados]);
+
+  const handleCargarDatos = () => {
+    setDatosCargados(false);
+  };
   // Función para filtrar ingresos por cuenta
   const obtenerIngresosPorCuenta = (cuenta) => {
     return ingresos.filter((ingreso) => ingreso.cuentaInstitucion === cuenta.institucion);
@@ -114,6 +101,9 @@ export function Informes() {
               <i className="fa-solid fa-circle-arrow-left me-2"></i>
               Regresar
             </Link>
+            <button className="btn btn-light btn-lg ms-2" onClick={handleCargarDatos}>
+              Cargar Datos <i class="fa-solid fa-arrows-rotate"></i>
+            </button>
           </div>
         </div>
 
@@ -152,8 +142,6 @@ export function Informes() {
           </div>
 
           <div className="col">
-            <br></br>
-
             <h2><b>Objetivos:</b></h2>
             <br></br>
             <table className="table table-hover">
