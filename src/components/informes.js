@@ -101,7 +101,11 @@ export function Informes() {
                   <br />
                   {cuentas.map((cuenta) => (
                     <div key={cuenta.id}>
-                      <p className="mb-0">{cuenta.institucion}</p>
+                      <p className="mb-0">
+                        <b>
+                        {cuenta.institucion}
+                        </b>
+                        </p>
                       <ul>
                         {ingresos
                           .filter((ingreso) => ingreso.cuentaInstitucion === cuenta.institucion)
@@ -130,12 +134,16 @@ export function Informes() {
         <div>
          <div class="d-flex align-items-center">
            <div>
-             <p class="mb-0 text-secondary"><b>Total Gastos:</b></p>
+             <p class="mb-0 text-secondary"><b>Total Gastos por cuenta:</b></p>
              <br></br>
 
              {cuentas.map((cuenta) => (
                     <div key={cuenta.id}>
-                      <p className="mb-0">{cuenta.institucion}</p>
+                      <p className="mb-0">
+                        <b>
+                        {cuenta.institucion}
+                        </b>
+                        </p>
                       <ul>
                         {gastos
                           .filter((gasto) => gasto.cuentaInstitucion === gasto.institucion)
