@@ -74,21 +74,6 @@ export function Informes() {
   }, [userId]);
   
     
-
-  // useEffect(() => {
-  //   if (userId) {
-
-  //   const unsubscribeCuentas = db.collection('usuarios').doc(userId).collection('cuentas').onSnapshot((snapshot) => {
-  //     const nuevasCuentas = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-  //     setCuentas(nuevasCuentas);
-  //   });
-  //   return () => {
-  //     unsubscribeCuentas();
-  //   };
-  //   }
-  // }, [userId]);
- 
-
   return (
     <section>
       <div className="container">
