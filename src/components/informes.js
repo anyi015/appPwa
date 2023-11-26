@@ -8,8 +8,6 @@ export function Informes() {
   
   const [cuentas, setCuentas] = useState([]);
   const [ingresos, setIngresos] = useState([]);
-  const [totalGastos, setTotalGastos] = useState(0);
-  const [totalIngresos, setTotalIngresos] = useState(0);
   const navigate = useNavigate();  
   
   const user = auth.currentUser
