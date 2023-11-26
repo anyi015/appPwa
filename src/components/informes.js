@@ -24,14 +24,17 @@ export function Informes() {
    
 
     const userId = user.uid;
-    const unsubscribeGastos = db.collection('usuarios').doc(userId).collection('gastos').onSnapshot((snapshot) => {
+    const unsubscribeGastos = db
+    .collection('usuarios')
+    .doc(userId)
+    .collection('gastos')
+    .onSnapshot((snapshot) => {
       const nuevosGastos = snapshot.docs.map((doc) => ({
         id: doc.id,
-        saldoA: doc.data().saldoA,
-        institucion: doc.data().institucion,
-        valor: doc.data().valor,
+        fechaGasto: doc.data().fechaGasto,
+        gasto: doc.data().gasto,
         valorGasto: doc.data().valorGasto,
-        valorObjetivo: doc.data().valorObjetivo,
+        cuentaInstitucion: doc.data().cuentaInstitucion,
       }));
       setGastos(nuevosGastos);
     });
@@ -73,6 +76,19 @@ export function Informes() {
     }
   }, [userId]);
   
+
+  // Función para sumar los ingresos por cuenta
+  const obtenerTotalIngresosPorCuenta = (cuenta) => {
+    // Filtra los ingresos por la cuenta actual
+    const ingresosDeCuenta = ingresos.filter(
+      (ingreso) => ingreso.cuentaInstitucion === cuenta.institucion
+    );
+
+    // Suma los valores de los ingresos
+    const total = ingresosDeCuenta.reduce((suma, ingreso) => suma + (ingreso.valor || 0), 0);
+
+    return total;
+  };
     
   return (
     <section>
@@ -86,9 +102,8 @@ export function Informes() {
             </Link>
           </div>
         </div>
-          <div class="container">
 
-<div class="row row-cols-1 row-cols-md-2 row-cols-xl-4">
+{/* <div class="row row-cols-1 row-cols-md-2 row-cols-xl-4">
        <div class="col">
      <div class="card radius-10 border-start border-0 border-3 border-info">
       <div class="card-body">
@@ -166,15 +181,68 @@ export function Informes() {
        </div>
     </div>
     </div>
-    </div>
-    </div>
-    </div>
+    </div> */}
+ 
+ 
+ <div className="row align-items-left mt-4">
+          <div className="col">
+            <table className="table table-hover">
+              <thead>
+                <tr className="table-success">
+                  <th>Cuenta</th>
+                  <th>Total Ingresos</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cuentas.map((cuenta) => (
+                  <tr key={cuenta.id}>
+                    <td>{cuenta.institucion}</td>
+                    <td>${obtenerTotalIngresosPorCuenta(cuenta)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
 
+        <div className="row align-items-left mt-4">
+          <div className="col">
+            <h2>Total de Ingresos por Cuenta</h2>
+            <table className="table table-hover">
+              <thead>
+                <tr className="table-success">
+                  <th>Cuenta</th>
+                  <th>Total Ingresos</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cuentas.map((cuenta) => (
+                  <tr key={cuenta.id}>
+                    <td>{cuenta.institucion}</td>
+                    <td>${obtenerTotalIngresosPorCuenta(cuenta)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
 
-
+        <div className="row align-items-left mt-4">
+          <div className="col">
+            <h2>Total General</h2>
+            <p>
+              Total de Ingresos: ${ingresos.reduce((total, ingreso) => total + (ingreso.valor || 0), 0)}
+            </p>
+            <p>
+              Total de Gastos: ${gastos.reduce((total, gasto) => total + (gasto.valorGasto || 0), 0)}
+            </p>
+          </div>
+        </div>
+      </div>
     </section>
 
-    
+
+
 
 
     

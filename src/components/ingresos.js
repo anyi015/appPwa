@@ -206,7 +206,7 @@ export function Ingresos() {
               Valor:
             </label>
             <input
-              type='text'
+              type='number'
               className='form-control'
               id='valor'
               name='valor'

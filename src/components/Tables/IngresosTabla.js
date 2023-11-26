@@ -124,7 +124,7 @@ function IngresosTabla() {
                             <label className='form-label'>
                                     Ingresa un valor:
                                 </label>
-                                <input type="text"
+                                <input type="number"
                                     class="form-control"
                                     placeholder="$ Valor"
                                     value={valor}
