@@ -30,21 +30,22 @@ function CategoriasTabla() {
   };
   // Obtener datos de categorías desde la base de datos
   useEffect(() => {
-       
-    // Obtener datos de Firebase para Cuentas
-    const unsubscribeCategorias = db.collection('usuarios').doc(auth.currentUser.uid).collection('categorias').onSnapshot((snapshot) => {
-        const nuevaCategorias = [];
-        snapshot.forEach((doc) => {
-          const data = doc.data();
-          nuevaCategorias.push({ id: doc.id, ...data });
-        });
-        setCategorias(nuevaCategorias);
-      });
+    const user = auth.currentUser;
+
+  if (user) {
+    const userId = user.uid;
+
+    // Resto del código para obtener datos de Firebase
+    const unsubscribeCategorias = db.collection('usuarios').doc(userId).collection('categorias').onSnapshot((snapshot) => {
+      const nuevasCategoria = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setCategorias(nuevasCategoria);
+    });
 
     // Limpia las suscripciones cuando la vista se desmonta
     return () => {
-        unsubscribeCategorias();
+      unsubscribeCategorias();
     };
+  }
 }, []);
 
 
