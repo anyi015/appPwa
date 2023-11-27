@@ -145,4 +145,72 @@ nav {
   }
 
 
+  @media (max-width: 768px) {
+    /* Estilos generales para dispositivos móviles */
+    body {
+      font-size: 14px;
+    }
   
+    /* Ajustes para la sección de objetivos */
+    .container {
+      padding: 10px;
+    }
+  
+    .grid {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+  
+    h1 {
+      font-size: 24px;
+    }
+  
+    .btn {
+      font-size: 14px;
+      margin-top: 10px;
+    }
+  
+    /* Ajustes para las tarjetas de objetivos */
+    .card-body {
+      padding: 10px;
+    }
+  
+    .list-group-item {
+      font-size: 12px;
+    }
+  
+    .large-icon {
+      font-size: 20px;
+    }
+  
+    .btn-success,
+    .btn-secondary,
+    .btn-primary,
+    .btn-danger {
+      font-size: 14px;
+      margin: 5px;
+    }
+  
+    /* Ajustes para el modal de edición */
+    .modal-header {
+      font-size: 18px;
+    }
+  
+    .modal-body {
+      padding: 10px;
+    }
+  
+    .form-label {
+      font-size: 14px;
+    }
+  
+    .form-control {
+      font-size: 14px;
+    }
+  
+    .modal-footer .btn {
+      font-size: 14px;
+      margin: 5px;
+    }
+  }

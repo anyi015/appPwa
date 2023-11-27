@@ -196,7 +196,7 @@ export function Objetivos() {
           <div className='grid'>
             <div>
               <h1 style={{ textAlign: 'center' }}>Objetivos</h1>
-              <p class="text-h3 text-center">Agrega un nuevo Objetivo y administra mejor tu dinero! </p>
+              <p className="text-h3 text-center">Agrega un nuevo Objetivo y administra mejor tu dinero! </p>
               <br></br>
               <Link to='/ObjetivosTabla' className='btn btn-success btn-lg ms-2'>
                 <i className='fa fa-plus-circle me-2' ></i>
