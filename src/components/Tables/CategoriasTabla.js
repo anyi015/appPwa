@@ -14,6 +14,7 @@ function CategoriasTabla() {
   const [mostrarEmojiPicker, setMostrarEmojiPicker] = useState(false);
   const [icono, setIcono] = useState('');
   const [datosCargados, setDatosCargados] = useState(false);
+  const [reloadData, setReloadData] = useState(false);
   const navigate = useNavigate();
   //notificaciones
   const notify = () => {
@@ -55,11 +56,11 @@ function CategoriasTabla() {
 }
 };
 
-if (!datosCargados) {
-fetchData();
+if (!datosCargados || reloadData) {
+  fetchData();
+  setReloadData(false);
 }
-
-}, [navigate, datosCargados]);
+}, [navigate, datosCargados, reloadData]);
 
 
   const toggleModal = () => {
@@ -108,7 +109,7 @@ fetchData();
   };
 
   const handleCargarDatos = () => {
-    setDatosCargados(false); // Forzar la recarga de datos
+    setReloadData((prev) => !prev);
   };
 
   return (
@@ -121,12 +122,15 @@ fetchData();
       <Link to='/home' className='btn btn-light btn-lg ms-2' style={{ color: 'white', background: 'purple' }}>
         <i class="fa-solid fa-circle-arrow-left me-2" ></i>
         Regresar</Link>
-        <button className='btn btn-light btn-lg ms-2' 
+       
+        <button
+  className='btn btn-light btn-lg ms-2'
+  onClick={handleCargarDatos}
+>
+  <i className="fa-solid fa-arrows-rotate"></i> Recargar Datos
+</button>
 
-        onClick={handleCargarDatos}>
 
-       <i class="fa-solid fa-arrows-rotate"></i>
-      </button>
       <table className="table table-hover mt-3">
         <thead>
           <tr class="table-success">

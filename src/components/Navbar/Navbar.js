@@ -53,8 +53,7 @@ export function MyNavbar() {
 
 			/>
 			<CContainer fluid style={{ textAlign: 'center' }}>
-				<AppProvider>
-
+			
 				<COffcanvas id="offcanvasNavbar2" placement="end" portal={false} visible={visible} onHide={() => setVisible(false)}>
 					<COffcanvasHeader>
 						<COffcanvasTitle style={{ color: 'purple',fontSize:'x-large' }}><b>Menú</b>
@@ -106,7 +105,6 @@ export function MyNavbar() {
 					</COffcanvasBody>
 				</COffcanvas>
 
-				</AppProvider>
 
 			</CContainer>
 		</CNavbar>

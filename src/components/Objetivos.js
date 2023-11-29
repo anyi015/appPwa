@@ -13,7 +13,12 @@ export function Objetivos() {
 
   const [objetivos, setObjetivos] = useState([]);
   const [objetivoSeleccionado, setObjetivoSeleccionado] = useState(null);
-  const [modal, setModal] = useState(false);
+  const [modalEditar, setModalEditar] = useState(false);
+  const [modalVerSaldo, setModalVerSaldo] = useState(false);
+  const [cuentas, setCuentas] = useState([]);
+  const [cuentaSeleccionada, setCuentaSeleccionada] = useState(null);
+  const [cuentaSeleccionadaInfo, setCuentaSeleccionadaInfo] = useState(null);
+
 
   //notificaciones
   const notify = () => {
@@ -26,25 +31,40 @@ export function Objetivos() {
     toast.success("Completado con exito!")
   };
 
+  const user = auth.currentUser
+  const userId = user ? user.uid : null;
+
   useEffect(() => {
-    // Obtener datos de Firebase
-    const unsubscribe = db
-      .collection('usuarios')
-      .doc(auth.currentUser.uid)
-      .collection('objetivos')
-      .onSnapshot((snapshot) => {
-        const nuevoObjetivo = [];
-        snapshot.forEach((doc) => {
-          const data = doc.data();
-          nuevoObjetivo.push({ id: doc.id, ...data });
+
+    if (userId) {
+      // Obtener datos de Firebase
+      const unsubscribe = db
+        .collection('usuarios')
+        .doc(auth.currentUser.uid)
+        .collection('objetivos')
+        .onSnapshot((snapshot) => {
+          const nuevoObjetivo = [];
+          snapshot.forEach((doc) => {
+            const data = doc.data();
+            nuevoObjetivo.push({ id: doc.id, ...data });
+          });
+          setObjetivos(nuevoObjetivo);
         });
-        setObjetivos(nuevoObjetivo);
+
+      const unsubscribeCuentas = db.collection('usuarios').doc(userId).collection('cuentas').onSnapshot((snapshot) => {
+        const nuevasCuentas = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        setCuentas(nuevasCuentas);
       });
 
 
-    // Limpia la suscripción cuando la vista se desmonta
-    return () => unsubscribe();
-  }, []);
+      // Limpia la suscripción cuando la vista se desmonta
+      return () => {
+        unsubscribeCuentas();
+        unsubscribe();
+      };
+    }
+
+  }, [userId]);
 
   // Función para marcar el objetivo como cumplido
   const handleObjetivoCumplido = (objetivoId) => {
@@ -75,18 +95,19 @@ export function Objetivos() {
     }
   };
 
-  const toggleModal = () => {
-    setModal(!modal);
+  const toggleModalEditar = () => {
+    setModalEditar(!modalEditar);
   };
+
 
   const handleEditar = (objetivo) => {
     setObjetivoSeleccionado(objetivo);
-    toggleModal();
+    toggleModalEditar();
   };
 
   const handleCancelarEdicion = () => {
     setObjetivoSeleccionado(null);
-    toggleModal();
+    toggleModalEditar();
   };
 
   const handleEliminar = async (id) => {
@@ -106,7 +127,7 @@ export function Objetivos() {
       console.log('Objetivo actualizado exitosamente');
       notify(); // Llamada a la función notify después de la actualización exitosa
       setObjetivoSeleccionado(null);
-      toggleModal();
+      toggleModalEditar();
     } catch (error) {
       console.error('Error al actualizar el Objetivo', error);
     }
@@ -184,8 +205,41 @@ export function Objetivos() {
     });
   }, [objetivos]);
 
+  const abrirModalVerSaldo = (cuentaInfo) => {
+    setCuentaSeleccionadaInfo(cuentaInfo);
+    setModalVerSaldo(true);
+  };
 
+  // Función para cerrar el modal y limpiar la información de la cuenta seleccionada
+  const cerrarModalVerSaldo = () => {
+    setCuentaSeleccionadaInfo(null);
+    setModalVerSaldo(false);
+  };
 
+  const toggleModalVerSaldo = () => {
+    setModalVerSaldo(!modalVerSaldo);
+  };
+
+  const handleVerSaldo = (cuenta) => {
+    // Setea la cuenta seleccionada
+    setCuentaSeleccionada(cuenta);
+  
+    // Verifica si `cuentas` está definido y es un arreglo
+    if (Array.isArray(cuentas)) {
+      // Encuentra la cuenta correspondiente por su ID
+      const cuentaInfo = cuentas.find((c) => c.id === cuenta.id);
+  
+      // Si la cuentaInfo es válida, la establece en el estado
+      if (cuentaInfo) {
+        setCuentaSeleccionadaInfo(cuentaInfo);
+      } else {
+        console.error('No se encontró la información de la cuenta');
+      }
+    }
+  
+    // Abre el modal de ver saldo
+    toggleModalVerSaldo();
+  };
   return (
 
 
@@ -237,6 +291,18 @@ export function Objetivos() {
                           <li className='list-group-item list-group-item-action'>
                             <b>Valor:</b> <span>{objetivo.valorObjetivo}</span>
                           </li>
+                          {objetivoSeleccionado && objetivoSeleccionado.cuentaId && (
+  <>
+    {/* Otras propiedades del objetivo */}
+    {cuentas.map((cuenta) => (
+      cuenta.id === objetivoSeleccionado.cuentaId && (
+        <li className='list-group-item list-group-item-action' key={cuenta.id}>
+          <b>Institución:</b> <span>{cuenta.institucion}</span>
+        </li>
+      )
+    ))}
+  </>
+)}
                         </ul>
                       </div>
                       <div className='col-md-1 d-flex flex-column align-items-center'>
@@ -251,12 +317,16 @@ export function Objetivos() {
                           </button>
                         )}
 
-                        <Link to="/cuenta"
-                          className="btn btn-secondary my-1"
-                          title="Ver saldo de la cuenta">
-                          <i className="fa fa-eye"></i>
-
-                        </Link>
+                        <button
+                          className="btn btn-info my-1"
+                          onClick={() => {
+                            setCuentaSeleccionadaInfo(cuentas);
+                            toggleModalVerSaldo();
+                          }}
+                          title="Detalles de la cuenta"
+                        >
+                          <i className="fa fa-info-circle"></i>
+                        </button>
 
                         {/* editar */}
                         <button
@@ -284,9 +354,67 @@ export function Objetivos() {
           </div>
         </div>
       </section>
+
+      {/* Modal de Detalles de la Cuenta */}
+      <Modal isOpen={modalVerSaldo} toggle={toggleModalVerSaldo}>
+        <ModalHeader toggle={toggleModalVerSaldo} style={{ textAlign: 'center' }}>Detalles de la Cuenta</ModalHeader>
+        <ModalBody>
+          <form>
+            {cuentaSeleccionadaInfo && (
+              <>
+                <div className="mb-3">
+                  <label htmlFor="institucion" className="form-label">Institución financiera:</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    id="institucion"
+                    value={cuentaSeleccionadaInfo.institucion}
+                    readOnly
+                  />
+                </div>
+                <div className="mb-3">
+                  <label htmlFor="tipoCuenta" className="form-label">Tipo de cuenta:</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    id="tipoCuenta"
+                    value={cuentaSeleccionadaInfo.tipoCuenta}
+                    readOnly
+                  />
+                </div>
+                <div className="mb-3">
+                  <label htmlFor="descripcion" className="form-label">Descripción:</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    id="descripcion"
+                    value={cuentaSeleccionadaInfo.descripcion}
+                    readOnly
+                  />
+                </div>
+                <div className="mb-3">
+                  <label htmlFor="saldoActual" className="form-label">Saldo Actual:</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    id="saldoActual"
+                    value={`$${cuentaSeleccionadaInfo.saldoA}`}
+                    readOnly
+                  />
+                </div>
+                {/* Agrega más campos según tus necesidades */}
+              </>
+            )}
+          </form>
+        </ModalBody>
+        <ModalFooter>
+          {/* Agrega botones de acción según tus necesidades */}
+        </ModalFooter>
+      </Modal>
+
       {/* Modal de Edición */}
-      <Modal isOpen={modal} toggle={toggleModal}>
-        <ModalHeader toggle={toggleModal} style={{ textAlign: 'center' }}>Editar Cuenta</ModalHeader>
+      <Modal isOpen={modalEditar} toggle={toggleModalEditar}>
+        <ModalHeader toggle={toggleModalEditar} style={{ textAlign: 'center' }}>Editar Cuenta</ModalHeader>
         <ModalBody>
           <form>
             <div className='mb-3'>

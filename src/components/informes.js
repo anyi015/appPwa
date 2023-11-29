@@ -8,7 +8,8 @@ export function Informes() {
   const [objetivos, setObjetivos] = useState([]);
   const [cuentas, setCuentas] = useState([]);
   const [ingresos, setIngresos] = useState([]);
-  const [datosCargados, setDatosCargados] = useState(false); // Nuevo estado
+  const [datosCargados, setDatosCargados] = useState(false);
+  const [recargarDatos, setRecargarDatos] = useState(false); // Nuevo estado
   
   const navigate = useNavigate();
 
@@ -72,14 +73,17 @@ export function Informes() {
         console.error('Error al obtener datos:', error);
       }
     };
-    if (!datosCargados) {
+    if (!datosCargados || recargarDatos) {
       fetchData();
-    } // Llamada a la función de obtención de datos
-  }, [navigate, userId,, datosCargados]);
+      setRecargarDatos(false); // Restablecer el estado después de cargar los datos
+    }
+  }, [navigate, userId, datosCargados, recargarDatos]);
 
   const handleCargarDatos = () => {
-    setDatosCargados(false);
+    setRecargarDatos(true);
   };
+
+
   // Función para filtrar ingresos por cuenta
   const obtenerIngresosPorCuenta = (cuenta) => {
     return ingresos.filter((ingreso) => ingreso.cuentaInstitucion === cuenta.institucion);
@@ -101,8 +105,9 @@ export function Informes() {
               <i className="fa-solid fa-circle-arrow-left me-2"></i>
               Regresar
             </Link>
+           
             <button className="btn btn-light btn-lg ms-2" onClick={handleCargarDatos}>
-              Cargar Datos <i class="fa-solid fa-arrows-rotate"></i>
+              Cargar Datos <i className="fa-solid fa-arrows-rotate"></i>
             </button>
           </div>
         </div>
