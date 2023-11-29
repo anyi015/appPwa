@@ -22,6 +22,7 @@ export function ObjetivosTabla() {
       fechaInicio: fechaInicio,
       valorObjetivo: valorObjetivo,
       descripcion: descripcion,
+      cuentaInstitucion: cuentaInstitucion
     };
     
 

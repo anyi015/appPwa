@@ -18,6 +18,7 @@ export function Objetivos() {
   const [cuentas, setCuentas] = useState([]);
   const [cuentaSeleccionada, setCuentaSeleccionada] = useState(null);
   const [cuentaSeleccionadaInfo, setCuentaSeleccionadaInfo] = useState(null);
+  const [objetivosCumplidos, setObjetivosCumplidos] = useState([]);
 
 
   //notificaciones
@@ -85,8 +86,10 @@ export function Objetivos() {
           // Éxito: El objetivo se ha marcado como cumplido en la base de datos
           notifyObjetivoC();
           console.log('Objetivo marcado como cumplido con éxito');
-          // Si deseas realizar más acciones después de marcarlo como cumplido, aquí es el lugar.
-        })
+          // Agregar el ID del objetivo cumplido al estado
+        setObjetivosCumplidos((prevObjetivosCumplidos) => [...prevObjetivosCumplidos, objetivoId]);
+
+  })
         .catch((error) => {
           // Error al actualizar en la base de datos
           console.error('Error al marcar el objetivo como cumplido:', error);
@@ -185,25 +188,34 @@ export function Objetivos() {
       try {
         const messaging = getMessaging();
         await requestNotificationPermission();
-
+  
         // Manejar las notificaciones push mientras la aplicación está abierta
         onMessage(messaging, (payload) => {
           console.log('Notificación push recibida:', payload);
           // Puedes personalizar cómo manejar las notificaciones push aquí
           // Ejemplo: mostrar una notificación nativa usando la API Notification
           const { title, body } = payload.notification;
-          new Notification(title, { body });
+          const objetivoId = payload.data.objetivoId;
+          
+          if (!objetivosCumplidos.includes(objetivoId)) {
+            // Puedes personalizar cómo manejar las notificaciones push aquí
+            // Ejemplo: mostrar una notificación nativa usando la API Notification
+            new Notification(title, { body });
+          }
         });
       } catch (error) {
         console.error('Error al configurar notificaciones push:', error);
       }
     };
+  
     setupPushNotifications();
+  
     // Enviar recordatorio cuando la aplicación se carga
     objetivos.forEach((objetivo) => {
       sendNotification(objetivo);
     });
-  }, [objetivos]);
+  
+  }, [objetivos, objetivosCumplidos]);
 
   const abrirModalVerSaldo = (cuentaInfo) => {
     setCuentaSeleccionadaInfo(cuentaInfo);
@@ -223,12 +235,12 @@ export function Objetivos() {
   const handleVerSaldo = (cuenta) => {
     // Setea la cuenta seleccionada
     setCuentaSeleccionada(cuenta);
-  
+
     // Verifica si `cuentas` está definido y es un arreglo
     if (Array.isArray(cuentas)) {
       // Encuentra la cuenta correspondiente por su ID
       const cuentaInfo = cuentas.find((c) => c.id === cuenta.id);
-  
+
       // Si la cuentaInfo es válida, la establece en el estado
       if (cuentaInfo) {
         setCuentaSeleccionadaInfo(cuentaInfo);
@@ -236,7 +248,7 @@ export function Objetivos() {
         console.error('No se encontró la información de la cuenta');
       }
     }
-  
+
     // Abre el modal de ver saldo
     toggleModalVerSaldo();
   };
@@ -291,18 +303,10 @@ export function Objetivos() {
                           <li className='list-group-item list-group-item-action'>
                             <b>Valor:</b> <span>{objetivo.valorObjetivo}</span>
                           </li>
-                          {objetivoSeleccionado && objetivoSeleccionado.cuentaId && (
-  <>
-    {/* Otras propiedades del objetivo */}
-    {cuentas.map((cuenta) => (
-      cuenta.id === objetivoSeleccionado.cuentaId && (
-        <li className='list-group-item list-group-item-action' key={cuenta.id}>
-          <b>Institución:</b> <span>{cuenta.institucion}</span>
-        </li>
-      )
-    ))}
-  </>
-)}
+                          <li className='list-group-item list-group-item-action'>
+                            <b>Cuenta:</b> <span>{objetivo.cuentaInstitucion}</span>
+                          </li>
+
                         </ul>
                       </div>
                       <div className='col-md-1 d-flex flex-column align-items-center'>
@@ -317,16 +321,11 @@ export function Objetivos() {
                           </button>
                         )}
 
-                        <button
-                          className="btn btn-info my-1"
-                          onClick={() => {
-                            setCuentaSeleccionadaInfo(cuentas);
-                            toggleModalVerSaldo();
-                          }}
-                          title="Detalles de la cuenta"
-                        >
-                          <i className="fa fa-info-circle"></i>
-                        </button>
+                        <Link to="/cuenta"
+                          className="btn btn-secondary my-1"
+                          title="Ver saldo de la cuenta">
+                          <i className="fa fa-eye"></i>
+                          </Link>
 
                         {/* editar */}
                         <button
@@ -355,62 +354,6 @@ export function Objetivos() {
         </div>
       </section>
 
-      {/* Modal de Detalles de la Cuenta */}
-      <Modal isOpen={modalVerSaldo} toggle={toggleModalVerSaldo}>
-        <ModalHeader toggle={toggleModalVerSaldo} style={{ textAlign: 'center' }}>Detalles de la Cuenta</ModalHeader>
-        <ModalBody>
-          <form>
-            {cuentaSeleccionadaInfo && (
-              <>
-                <div className="mb-3">
-                  <label htmlFor="institucion" className="form-label">Institución financiera:</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="institucion"
-                    value={cuentaSeleccionadaInfo.institucion}
-                    readOnly
-                  />
-                </div>
-                <div className="mb-3">
-                  <label htmlFor="tipoCuenta" className="form-label">Tipo de cuenta:</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="tipoCuenta"
-                    value={cuentaSeleccionadaInfo.tipoCuenta}
-                    readOnly
-                  />
-                </div>
-                <div className="mb-3">
-                  <label htmlFor="descripcion" className="form-label">Descripción:</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="descripcion"
-                    value={cuentaSeleccionadaInfo.descripcion}
-                    readOnly
-                  />
-                </div>
-                <div className="mb-3">
-                  <label htmlFor="saldoActual" className="form-label">Saldo Actual:</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="saldoActual"
-                    value={`$${cuentaSeleccionadaInfo.saldoA}`}
-                    readOnly
-                  />
-                </div>
-                {/* Agrega más campos según tus necesidades */}
-              </>
-            )}
-          </form>
-        </ModalBody>
-        <ModalFooter>
-          {/* Agrega botones de acción según tus necesidades */}
-        </ModalFooter>
-      </Modal>
 
       {/* Modal de Edición */}
       <Modal isOpen={modalEditar} toggle={toggleModalEditar}>
@@ -456,6 +399,21 @@ export function Objetivos() {
                 onChange={handleChange}
 
               />
+
+              <label htmlFor='gasto' className='form-label'>
+                Nombre de la cuenta:
+              </label>
+              <select
+                className="form-control"
+                value={objetivoSeleccionado ? objetivoSeleccionado.cuentaInstitucion : ''}
+              >
+                <option value="">Selecciona una cuenta</option>
+                {cuentas.map((cuenta) => (
+                  <option key={cuenta.id} value={cuenta.institucion}>
+                    {cuenta.institucion}
+                  </option>
+                ))}
+              </select>
 
               <label htmlFor='objetivo' className='form-label'>
                 Descripcion:
