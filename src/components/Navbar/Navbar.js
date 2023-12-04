@@ -85,6 +85,12 @@ export function MyNavbar() {
 
 							</CNavItem>
 							<CNavItem>
+								<CNavLink href="/ayuda" active style={{fontSize:'x-large'}}>
+									<i aria-hidden="true" style={{ color: 'purple', width: '35px' }} class="fa-solid fa-circle-info"></i>
+									<b>Ayuda</b></CNavLink>
+
+							</CNavItem>
+							<CNavItem>
 							<CNavLink  onClick={handleLogout} active style={{fontSize:'x-large'}}>
 							<i aria-hidden="true" style={{ color: 'purple', width: '35px', fontSize:'x-large' }} class="fa-solid fa-right-from-bracket"></i>
 							<b>Cerrar Sesión</b>

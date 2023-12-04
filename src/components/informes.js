@@ -67,8 +67,8 @@ export function Informes() {
         }));
         setObjetivos(nuevosObjetivos);
 
-
         setDatosCargados(true);
+        
       } catch (error) {
         console.error('Error al obtener datos:', error);
       }
@@ -91,7 +91,7 @@ export function Informes() {
 
   // Función para filtrar gastos por cuenta
   const obtenerGastosPorCuenta = (cuenta) => {
-    console.log('datos', gastos);
+    console.log('datos gasto', gastos);
     return gastos.filter((gasto) => gasto.cuentaInstitucion === cuenta.institucion);
   };
 

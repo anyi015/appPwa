@@ -7,6 +7,7 @@ import RegistrarCategoria from './components/RegistrarCategoria';
 import CategoriasTabla from './components/Tables/CategoriasTabla';
 import { useNavigate } from 'react-router-dom';
 import { AppProvider } from '../src/DatosGlobales';
+import {Ayuda} from './components/ayuda'
 
 
 
@@ -45,6 +46,7 @@ const App = () => {
             <Route path="/signup" element={<Signup></Signup>} ></Route>
             <Route path="/home" element={<Home></Home>} ></Route>
             <Route path="/cuenta" element={<Cuenta></Cuenta>} ></Route>
+            <Route path="/ayuda" element={<Ayuda></Ayuda>} ></Route>
             <Route path='/Ingresos' element={<Ingresos></Ingresos>} ></Route>
             <Route path='/Informes' element={<Informes></Informes>} ></Route>
             <Route path='/Gastos' element={<Gastos></Gastos>} ></Route>
